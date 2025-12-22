@@ -71,13 +71,13 @@ const AdminFlights = () => {
     flightNumber: "",
     airline: "Garuda Indonesia",
     airlineCode: "GA",
-    from: "Jakarta (CGK)",
-    fromCode: "CGK",
-    to: "Denpasar (DPS)",
-    toCode: "DPS",
+    from: "",
+    fromCode: "",
+    to: "",
+    toCode: "",
     departureTime: "",
     arrivalTime: "",
-    departureDate: "",
+    departureDate: new Date().toISOString().split("T")[0], // Default hari ini
     duration: "",
     durationMinutes: 0,
     price: 0,
@@ -86,7 +86,6 @@ const AdminFlights = () => {
       business: 0,
       first: 0,
     },
-    class: "Ekonomi",
     availableSeats: 0,
     totalSeats: 180,
     status: "Tersedia",
@@ -248,7 +247,8 @@ const AdminFlights = () => {
   const handleSearch = (filters) => {
     setIsSearching(true);
     setTimeout(() => {
-      let results = searchFlights(filters);
+      // Gunakan flights dari DataContext untuk konsistensi
+      let results = searchFlights(filters, flights);
 
       if (filterStatus !== "all") {
         results = results.filter(
@@ -277,17 +277,18 @@ const AdminFlights = () => {
 
   const handleAddFlight = () => {
     setEditingFlight(null);
+    const today = new Date().toISOString().split("T")[0];
     setFormData({
       flightNumber: "",
       airline: "Garuda Indonesia",
       airlineCode: "GA",
-      from: "Jakarta (CGK)",
-      fromCode: "CGK",
-      to: "Denpasar (DPS)",
-      toCode: "DPS",
+      from: "",
+      fromCode: "",
+      to: "",
+      toCode: "",
       departureTime: "",
       arrivalTime: "",
-      departureDate: "",
+      departureDate: today, // Set default ke hari ini
       duration: "",
       durationMinutes: 0,
       price: 0,
@@ -296,7 +297,6 @@ const AdminFlights = () => {
         business: 0,
         first: 0,
       },
-      class: "Ekonomi",
       availableSeats: 0,
       totalSeats: 180,
       status: "Tersedia",
@@ -342,12 +342,14 @@ const AdminFlights = () => {
   };
 
   const handleSaveFlight = () => {
-    // Validation
+    // Validation: Form harus lengkap
     if (
       !formData.flightNumber ||
       !formData.from ||
       !formData.to ||
-      !formData.departureDate
+      !formData.departureDate ||
+      !formData.departureTime ||
+      !formData.arrivalTime
     ) {
       setAlert({
         isOpen: true,
@@ -358,18 +360,85 @@ const AdminFlights = () => {
       return;
     }
 
+    // Validation: Kota berangkat tidak boleh sama dengan kota tujuan
+    if (formData.fromCode === formData.toCode) {
+      setAlert({
+        isOpen: true,
+        type: "error",
+        title: "Kota Tidak Valid",
+        message: "Kota berangkat tidak boleh sama dengan kota tujuan!",
+      });
+      return;
+    }
+
+    // Validation: Tanggal berangkat minimal hari ini
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const departureDate = new Date(formData.departureDate);
+    departureDate.setHours(0, 0, 0, 0);
+
+    if (departureDate < today) {
+      setAlert({
+        isOpen: true,
+        type: "error",
+        title: "Tanggal Tidak Valid",
+        message: "Tanggal berangkat tidak boleh kurang dari hari ini!",
+      });
+      return;
+    }
+
+    // Validation: Semua harga class harus diisi
+    if (
+      !formData.prices?.economy ||
+      formData.prices.economy <= 0 ||
+      !formData.prices?.business ||
+      formData.prices.business <= 0 ||
+      !formData.prices?.first ||
+      formData.prices.first <= 0
+    ) {
+      setAlert({
+        isOpen: true,
+        type: "warning",
+        title: "Harga Belum Lengkap",
+        message:
+          "Mohon isi harga untuk semua kelas (Ekonomi, Bisnis, First Class)!",
+      });
+      return;
+    }
+
     const flightData = {
       ...formData,
-      price: formData.prices?.economy || formData.price,
+      price: formData.prices?.economy || formData.price, // Default price adalah economy
+      prices: {
+        economy: formData.prices?.economy || 0,
+        business: formData.prices?.business || 0,
+        first: formData.prices?.first || 0,
+      },
+      arrivalDate: formData.departureDate, // Set arrival date same as departure for now
+      // Hapus field class karena semua class tersedia
       id:
         editingFlight?.id ||
         "FL" + (flights.length + 1).toString().padStart(3, "0"),
     };
+    // Hapus field class dari flightData jika ada
+    delete flightData.class;
 
     if (editingFlight) {
       updateFlight(editingFlight.id, flightData);
+      setAlert({
+        isOpen: true,
+        type: "success",
+        title: "Berhasil!",
+        message: "Penerbangan berhasil diperbarui",
+      });
     } else {
       addFlight(flightData);
+      setAlert({
+        isOpen: true,
+        type: "success",
+        title: "Berhasil!",
+        message: "Penerbangan berhasil ditambahkan",
+      });
     }
 
     setShowForm(false);
@@ -748,7 +817,7 @@ const AdminFlights = () => {
                         </div>
                       </div>
                       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        {flight.class}
+                        Semua Kelas Tersedia
                       </div>
                     </div>
 
@@ -781,10 +850,10 @@ const AdminFlights = () => {
 
                     <div className="text-right">
                       <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {formatPrice(flight.price)}
+                        {formatPrice(flight.prices?.economy || flight.price)}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        per orang
+                        Mulai dari (Ekonomi)
                       </div>
                     </div>
                   </div>
@@ -1023,14 +1092,28 @@ const AdminFlights = () => {
                               : formData.from,
                           });
                         }}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className={`w-full px-4 py-3 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          formData.fromCode === formData.toCode &&
+                          formData.fromCode
+                            ? "border-red-500 dark:border-red-500"
+                            : "border-gray-300"
+                        }`}
                       >
-                        {airports.map((airport) => (
-                          <option key={airport.code} value={airport.code}>
-                            {airport.city} ({airport.code})
-                          </option>
-                        ))}
+                        <option value="">Pilih kota berangkat</option>
+                        {airports
+                          .filter((airport) => airport.code !== formData.toCode)
+                          .map((airport) => (
+                            <option key={airport.code} value={airport.code}>
+                              {airport.city} ({airport.code})
+                            </option>
+                          ))}
                       </select>
+                      {formData.fromCode === formData.toCode &&
+                        formData.fromCode && (
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                            Kota berangkat tidak boleh sama dengan kota tujuan
+                          </p>
+                        )}
                     </div>
 
                     <div>
@@ -1052,14 +1135,30 @@ const AdminFlights = () => {
                               : formData.to,
                           });
                         }}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className={`w-full px-4 py-3 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          formData.fromCode === formData.toCode &&
+                          formData.toCode
+                            ? "border-red-500 dark:border-red-500"
+                            : "border-gray-300"
+                        }`}
                       >
-                        {airports.map((airport) => (
-                          <option key={airport.code} value={airport.code}>
-                            {airport.city} ({airport.code})
-                          </option>
-                        ))}
+                        <option value="">Pilih kota tujuan</option>
+                        {airports
+                          .filter(
+                            (airport) => airport.code !== formData.fromCode
+                          )
+                          .map((airport) => (
+                            <option key={airport.code} value={airport.code}>
+                              {airport.city} ({airport.code})
+                            </option>
+                          ))}
                       </select>
+                      {formData.fromCode === formData.toCode &&
+                        formData.toCode && (
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                            Kota tujuan tidak boleh sama dengan kota berangkat
+                          </p>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -1088,9 +1187,13 @@ const AdminFlights = () => {
                             departureDate: e.target.value,
                           })
                         }
+                        min={new Date().toISOString().split("T")[0]}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
                       />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Minimal tanggal hari ini
+                      </p>
                     </div>
 
                     <div>
@@ -1149,20 +1252,27 @@ const AdminFlights = () => {
                   </div>
                 </div>
 
-                {/* Price & Availability */}
+                {/* Price & Availability - All Classes */}
                 <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
                   <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <AiOutlineDollarCircle
                       size={20}
                       className="text-yellow-600 dark:text-yellow-400"
                     />
-                    Harga & Ketersediaan
+                    Harga Semua Kelas
                   </h3>
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div>
-                      <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <AiOutlineDollarCircle size={14} />
-                        Harga Ekonomi *
+                  <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+                    Setiap penerbangan memiliki semua kelas. Isi harga untuk
+                    semua kelas.
+                  </p>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                    {/* Harga Ekonomi */}
+                    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <label className="block mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded">
+                          Ekonomi
+                        </span>
+                        Harga *
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -1170,28 +1280,105 @@ const AdminFlights = () => {
                         </span>
                         <input
                           type="number"
-                          value={formData.prices?.economy || formData.price}
+                          value={formData.prices?.economy || 0}
                           onChange={(e) =>
                             setFormData({
                               ...formData,
-                              price: parseInt(e.target.value),
+                              price: parseInt(e.target.value) || 0, // Set default price ke economy
                               prices: {
                                 ...formData.prices,
-                                economy: parseInt(e.target.value),
+                                economy: parseInt(e.target.value) || 0,
                               },
                             })
                           }
                           placeholder="1200000"
+                          min="0"
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Harga Bisnis */}
+                    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <label className="block mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded">
+                          Bisnis
+                        </span>
+                        Harga *
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                          Rp
+                        </span>
+                        <input
+                          type="number"
+                          value={formData.prices?.business || 0}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              prices: {
+                                ...formData.prices,
+                                business: parseInt(e.target.value) || 0,
+                              },
+                            })
+                          }
+                          placeholder="2500000"
+                          min="0"
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
                         />
                       </div>
                     </div>
 
+                    {/* Harga First Class */}
+                    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <label className="block mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded">
+                          First Class
+                        </span>
+                        Harga *
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                          Rp
+                        </span>
+                        <input
+                          type="number"
+                          value={formData.prices?.first || 0}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              prices: {
+                                ...formData.prices,
+                                first: parseInt(e.target.value) || 0,
+                              },
+                            })
+                          }
+                          placeholder="5000000"
+                          min="0"
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+                  <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <HiOutlineUserGroup
+                      size={20}
+                      className="text-indigo-600 dark:text-indigo-400"
+                    />
+                    Ketersediaan Kursi
+                  </h3>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                       <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                         <HiOutlineUserGroup size={14} />
-                        Kursi Tersedia *
+                        Total Kursi Tersedia *
                       </label>
                       <input
                         type="number"
@@ -1199,13 +1386,17 @@ const AdminFlights = () => {
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            availableSeats: parseInt(e.target.value),
+                            availableSeats: parseInt(e.target.value) || 0,
                           })
                         }
-                        placeholder="24"
+                        placeholder="180"
+                        min="0"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
                       />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Total kursi tersedia untuk semua kelas
+                      </p>
                     </div>
 
                     <div>

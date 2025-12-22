@@ -29,11 +29,22 @@ export const DataProvider = ({ children }) => {
           const parsedFlights = JSON.parse(storedFlights);
           if (Array.isArray(parsedFlights) && parsedFlights.length > 0) {
             setFlights(parsedFlights);
+          } else {
+            // Jika data di localStorage tidak valid, gunakan flightsData
+            setFlights(flightsData);
+            localStorage.setItem("flights", JSON.stringify(flightsData));
           }
         } catch (e) {
           console.error("Error parsing flights:", e);
           localStorage.removeItem("flights");
+          // Set ke flightsData jika parsing gagal
+          setFlights(flightsData);
+          localStorage.setItem("flights", JSON.stringify(flightsData));
         }
+      } else {
+        // Jika tidak ada data di localStorage, inisialisasi dengan flightsData
+        setFlights(flightsData);
+        localStorage.setItem("flights", JSON.stringify(flightsData));
       }
 
       // Load bookings dari localStorage jika ada, jika tidak mulai dengan array kosong

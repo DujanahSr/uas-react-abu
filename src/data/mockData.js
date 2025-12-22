@@ -32,7 +32,6 @@ export const flightsData = [
       business: 2500000,
       first: 5000000
     },
-    class: 'Ekonomi',
     availableSeats: 24,
     totalSeats: 180,
     status: 'Tersedia',
@@ -65,7 +64,6 @@ export const flightsData = [
       business: 2000000,
       first: 4000000
     },
-    class: 'Ekonomi',
     availableSeats: 45,
     totalSeats: 215,
     status: 'Tersedia',
@@ -98,7 +96,6 @@ export const flightsData = [
       business: 1800000,
       first: 3500000
     },
-    class: 'Ekonomi',
     availableSeats: 12,
     totalSeats: 180,
     status: 'Hampir Penuh',
@@ -132,7 +129,6 @@ export const flightsData = [
       business: 1500000,
       first: 3000000
     },
-    class: 'Ekonomi',
     availableSeats: 45,
     totalSeats: 215,
     status: 'Tersedia',
@@ -165,7 +161,6 @@ export const flightsData = [
       business: 1800000,
       first: 3500000
     },
-    class: 'Ekonomi',
     availableSeats: 38,
     totalSeats: 180,
     status: 'Tersedia',
@@ -199,7 +194,6 @@ export const flightsData = [
       business: 2000000,
       first: 4000000
     },
-    class: 'Ekonomi',
     availableSeats: 12,
     totalSeats: 180,
     status: 'Hampir Penuh',
@@ -232,7 +226,6 @@ export const flightsData = [
       business: 2800000,
       first: 5500000
     },
-    class: 'Ekonomi',
     availableSeats: 28,
     totalSeats: 180,
     status: 'Tersedia',
@@ -266,7 +259,6 @@ export const flightsData = [
       business: 1700000,
       first: 3200000
     },
-    class: 'Ekonomi',
     availableSeats: 38,
     totalSeats: 180,
     status: 'Tersedia',
@@ -300,7 +292,6 @@ export const flightsData = [
       business: 2300000,
       first: 4500000
     },
-    class: 'Ekonomi',
     availableSeats: 52,
     totalSeats: 215,
     status: 'Tersedia',
@@ -334,7 +325,6 @@ export const flightsData = [
       business: 2100000,
       first: 4200000
     },
-    class: 'Ekonomi',
     availableSeats: 28,
     totalSeats: 180,
     status: 'Tersedia',
@@ -368,7 +358,6 @@ export const flightsData = [
       business: 1400000,
       first: 2800000
     },
-    class: 'Ekonomi',
     availableSeats: 35,
     totalSeats: 215,
     status: 'Tersedia',
@@ -402,7 +391,6 @@ export const flightsData = [
       business: 2700000,
       first: 5200000
     },
-    class: 'Ekonomi',
     availableSeats: 22,
     totalSeats: 180,
     status: 'Tersedia',
@@ -436,7 +424,6 @@ export const flightsData = [
       business: 1300000,
       first: 2600000
     },
-    class: 'Ekonomi',
     availableSeats: 48,
     totalSeats: 180,
     status: 'Tersedia',
@@ -469,7 +456,6 @@ export const flightsData = [
       business: 2600000,
       first: 5100000
     },
-    class: 'Ekonomi',
     availableSeats: 18,
     totalSeats: 180,
     status: 'Hampir Penuh',
@@ -502,7 +488,6 @@ export const flightsData = [
       business: 1600000,
       first: 3100000
     },
-    class: 'Ekonomi',
     availableSeats: 42,
     totalSeats: 215,
     status: 'Tersedia',
@@ -535,7 +520,6 @@ export const flightsData = [
       business: 2400000,
       first: 4700000
     },
-    class: 'Ekonomi',
     availableSeats: 31,
     totalSeats: 180,
     status: 'Tersedia',
@@ -568,7 +552,6 @@ export const flightsData = [
       business: 2900000,
       first: 5600000
     },
-    class: 'Ekonomi',
     availableSeats: 26,
     totalSeats: 180,
     status: 'Tersedia',
@@ -601,7 +584,6 @@ export const flightsData = [
       business: 1450000,
       first: 2900000
     },
-    class: 'Ekonomi',
     availableSeats: 39,
     totalSeats: 180,
     status: 'Tersedia',
@@ -634,7 +616,6 @@ export const flightsData = [
       business: 2800000,
       first: 5400000
     },
-    class: 'Ekonomi',
     availableSeats: 33,
     totalSeats: 215,
     status: 'Tersedia',
@@ -667,7 +648,6 @@ export const flightsData = [
       business: 2400000,
       first: 4800000
     },
-    class: 'Ekonomi',
     availableSeats: 15,
     totalSeats: 180,
     status: 'Hampir Penuh',
@@ -700,7 +680,6 @@ export const flightsData = [
       business: 2100000,
       first: 4100000
     },
-    class: 'Ekonomi',
     availableSeats: 25,
     totalSeats: 180,
     status: 'Tersedia',
@@ -733,7 +712,6 @@ export const flightsData = [
       business: 1550000,
       first: 3100000
     },
-    class: 'Ekonomi',
     availableSeats: 41,
     totalSeats: 215,
     status: 'Tersedia',
@@ -766,7 +744,6 @@ export const flightsData = [
       business: 1350000,
       first: 2700000
     },
-    class: 'Ekonomi',
     availableSeats: 37,
     totalSeats: 180,
     status: 'Tersedia',
@@ -799,7 +776,6 @@ export const flightsData = [
       business: 2650000,
       first: 5100000
     },
-    class: 'Ekonomi',
     availableSeats: 29,
     totalSeats: 180,
     status: 'Tersedia',
@@ -832,7 +808,6 @@ export const flightsData = [
       business: 1950000,
       first: 3900000
     },
-    class: 'Ekonomi',
     availableSeats: 19,
     totalSeats: 180,
     status: 'Hampir Penuh',
@@ -1030,8 +1005,11 @@ export const popularRoutes = [
 ];
 
 // Fungsi helper untuk filtering flights
-export const searchFlights = (filters) => {
-  let filtered = [...flightsData];
+// Menerima flights array sebagai parameter untuk konsistensi dengan DataContext
+export const searchFlights = (filters, flightsArray = null) => {
+  // Gunakan flightsArray jika disediakan (dari DataContext), jika tidak gunakan flightsData
+  const sourceFlights = flightsArray || flightsData;
+  let filtered = [...sourceFlights];
   
   if (filters.from) {
     const fromFilter = filters.from.toLowerCase().trim();

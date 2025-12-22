@@ -54,7 +54,8 @@ const SearchResults = () => {
     // Debug: log filters untuk troubleshooting
     console.log('Search Filters:', initialFilters);
     
-    let results = searchFlights(initialFilters);
+    // Gunakan flights dari DataContext untuk konsistensi dengan FlightDetail
+    let results = searchFlights(initialFilters, flights);
     
     // Debug: log hasil pencarian
     console.log('Search Results:', results.length, 'flights found');
@@ -63,7 +64,7 @@ const SearchResults = () => {
       // Coba cari tanpa filter tanggal untuk debug
       const debugFilters = { ...initialFilters };
       delete debugFilters.departureDate;
-      const debugResults = searchFlights(debugFilters);
+      const debugResults = searchFlights(debugFilters, flights);
       console.log('Debug search (without date):', debugResults.length, 'flights found');
     }
     

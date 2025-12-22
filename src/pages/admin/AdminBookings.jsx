@@ -425,50 +425,246 @@ const AdminBookings = () => {
     setSortBy("bookingDate");
   };
 
-  // Export to CSV
-  const exportToCSV = () => {
-    const headers = [
-      "Kode Booking",
-      "Nama Penumpang",
-      "Email",
-      "Telepon",
-      "Penumpang",
-      "Flight",
-      "Maskapai",
-      "Rute",
-      "Tanggal Berangkat",
-      "Jam",
-      "Kelas",
-      "Status Booking",
-      "Status Pembayaran",
-      "Total Harga",
-      "Tanggal Booking",
-    ];
-    const rows = filteredBookings.map((b) => [
-      b.bookingCode,
-      b.passengerName,
-      b.email,
-      b.phone,
-      Array.isArray(b.passengers) ? b.passengers.length : b.passengers || 0,
-      b.flightNumber,
-      b.airline,
-      b.route,
-      b.departureDate,
-      b.departureTime,
-      b.class,
-      b.status,
-      b.paymentStatus,
-      b.totalPrice,
-      b.bookingDate,
-    ]);
+  // Export to Excel dengan format yang rapi
+  const exportToExcel = () => {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    const timeStr = today.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    // Format harga untuk Excel
+    const formatPriceForExcel = (price) => {
+      return `Rp ${price.toLocaleString("id-ID")}`;
+    };
+
+    // Buat HTML table dengan styling yang bagus
+    let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .header p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .summary {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      margin-top: 10px;
+    }
+    .summary-item {
+      text-align: center;
+    }
+    .summary-item .label {
+      font-size: 12px;
+      color: #6c757d;
+      margin-bottom: 5px;
+    }
+    .summary-item .value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #212529;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    thead {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    th {
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid #5a67d8;
+      white-space: nowrap;
+    }
+    td {
+      padding: 10px 8px;
+      border: 1px solid #dee2e6;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    tbody tr:hover {
+      background-color: #e9ecef;
+    }
+    .status-confirmed {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-paid {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .price {
+      font-weight: bold;
+      color: #28a745;
+    }
+    .footer {
+      margin-top: 30px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 12px;
+      color: #6c757d;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📋 Laporan Data Pemesanan Tiket Pesawat</h1>
+    <p>FlyBook - Export Date: ${dateStr} ${timeStr}</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Kode Booking</th>
+        <th>Nama Penumpang</th>
+        <th>Email</th>
+        <th>Telepon</th>
+        <th>Jumlah Penumpang</th>
+        <th>Nomor Penerbangan</th>
+        <th>Maskapai</th>
+        <th>Rute</th>
+        <th>Tanggal Berangkat</th>
+        <th>Waktu Berangkat</th>
+        <th>Kelas</th>
+        <th>Status Booking</th>
+        <th>Status Pembayaran</th>
+        <th>Total Harga</th>
+        <th>Tanggal Booking</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
+    filteredBookings.forEach((b, index) => {
+      const passengerCount = Array.isArray(b.passengers)
+        ? b.passengers.length
+        : b.passengers || 0;
+
+      const statusClass =
+        b.status === "Confirmed"
+          ? "status-confirmed"
+          : b.status === "Pending"
+          ? "status-pending"
+          : "status-cancelled";
+
+      html += `
+      <tr>
+        <td>${index + 1}</td>
+        <td><strong>${b.bookingCode || "-"}</strong></td>
+        <td>${b.passengerName || "-"}</td>
+        <td>${b.email || "-"}</td>
+        <td>${b.phone || "-"}</td>
+        <td style="text-align: center;">${passengerCount}</td>
+        <td>${b.flightNumber || "-"}</td>
+        <td>${b.airline || "-"}</td>
+        <td>${b.route || "-"}</td>
+        <td>${b.departureDate || "-"}</td>
+        <td>${b.departureTime || "-"}</td>
+        <td>${b.class || "-"}</td>
+        <td><span class="${statusClass}">${b.status || "-"}</span></td>
+        <td><span class="status-paid">${b.paymentStatus || "Paid"}</span></td>
+        <td class="price">${formatPrice(b.totalPrice || 0)}</td>
+        <td>${b.bookingDate ? formatDate(b.bookingDate) : "-"}</td>
+      </tr>
+    `;
+    });
+
+    html += `
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p><strong>Total Data:</strong> ${filteredBookings.length} pemesanan</p>
+    <p>Dokumen ini dihasilkan secara otomatis dari sistem FlyBook</p>
+    <p>© ${new Date().getFullYear()} FlyBook - All Rights Reserved</p>
+  </div>
+</body>
+</html>
+`;
+
+    // Buat blob dan download
+    const blob = new Blob([html], {
+      type: "application/vnd.ms-excel",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pemesanan_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `Laporan_Pemesanan_${new Date()
+      .toISOString()
+      .slice(0, 10)
+      .replace(/-/g, "_")}.xls`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const totalRevenue = filteredBookings
@@ -664,11 +860,11 @@ const AdminBookings = () => {
                 Reset Filter
               </button>
               <button
-                onClick={exportToCSV}
-                className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                onClick={exportToExcel}
+                className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-all shadow-sm hover:shadow-md"
               >
                 <AiOutlineDownload size={16} />
-                Export Data
+                Export ke Excel
               </button>
             </div>
           </div>

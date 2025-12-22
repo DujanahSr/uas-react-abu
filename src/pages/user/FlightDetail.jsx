@@ -24,6 +24,8 @@ const FlightDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Cari penerbangan berdasarkan ID dari DataContext
+  // Pastikan menggunakan flights dari DataContext yang sama dengan SearchResults
   const flight = flights.find((f) => f.id === id);
   if (!flight) {
     return (
@@ -36,6 +38,12 @@ const FlightDetail = () => {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Penerbangan tidak ditemukan
           </h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            ID: {id}
+          </p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-500">
+            Total flights: {flights.length}
+          </p>
         </div>
       </div>
     );
@@ -93,7 +101,12 @@ const FlightDetail = () => {
   }, [user]);
 
   const getPrice = () => {
-    return flight.prices?.[selectedClass] || flight.price;
+    // Map selectedClass ke format yang benar
+    const priceKey = 
+      selectedClass === "economy" ? "economy" :
+      selectedClass === "business" ? "business" :
+      "first";
+    return flight.prices?.[priceKey] || flight.price;
   };
 
   const totalPrice = getPrice() * passengers;
@@ -246,11 +259,11 @@ const FlightDetail = () => {
               </p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                {formatPrice(getPrice())}
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                Mulai dari {formatPrice(flight.prices?.economy || flight.price)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                per penumpang
+                Pilih kelas di bawah untuk melihat harga
               </div>
             </div>
           </div>
@@ -353,40 +366,60 @@ const FlightDetail = () => {
 
                     <div>
                       <label className="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Pilih Kelas
+                        Pilih Kelas Penerbangan *
                       </label>
-                      <div className="grid grid-cols-3 gap-4">
+                      <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+                        Semua kelas tersedia untuk penerbangan ini. Pilih kelas yang diinginkan.
+                      </p>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         {[
                           {
                             value: "economy",
                             label: "Ekonomi",
+                            description: "Kelas standar dengan fasilitas lengkap",
                             price: flight.prices?.economy || flight.price,
+                            badgeColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+                            borderColor: selectedClass === "economy" ? "border-green-600" : "border-gray-300 dark:border-gray-600",
+                            bgColor: selectedClass === "economy" ? "bg-green-50 dark:bg-green-900/20" : "bg-white dark:bg-gray-700",
                           },
                           {
                             value: "business",
                             label: "Bisnis",
+                            description: "Lebih nyaman dengan layanan premium",
                             price: flight.prices?.business || flight.price * 2,
+                            badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+                            borderColor: selectedClass === "business" ? "border-blue-600" : "border-gray-300 dark:border-gray-600",
+                            bgColor: selectedClass === "business" ? "bg-blue-50 dark:bg-blue-900/20" : "bg-white dark:bg-gray-700",
                           },
                           {
                             value: "first",
                             label: "First Class",
+                            description: "Pengalaman premium terbaik",
                             price: flight.prices?.first || flight.price * 4,
+                            badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+                            borderColor: selectedClass === "first" ? "border-purple-600" : "border-gray-300 dark:border-gray-600",
+                            bgColor: selectedClass === "first" ? "bg-purple-50 dark:bg-purple-900/20" : "bg-white dark:bg-gray-700",
                           },
                         ].map((cls) => (
                           <button
                             key={cls.value}
+                            type="button"
                             onClick={() => setSelectedClass(cls.value)}
-                            className={`p-4 border-2 rounded-lg transition-all ${
-                              selectedClass === cls.value
-                                ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                                : "border-gray-300 dark:border-gray-600 hover:border-blue-300"
-                            }`}
+                            className={`p-5 border-2 rounded-xl transition-all text-left hover:shadow-md ${cls.borderColor} ${cls.bgColor}`}
                           >
-                            <div className="font-bold text-gray-900 dark:text-white">
-                              {cls.label}
+                            <div className="flex items-center justify-between mb-2">
+                              <span className={`px-2 py-1 text-xs font-semibold rounded ${cls.badgeColor}`}>
+                                {cls.label}
+                              </span>
+                              {selectedClass === cls.value && (
+                                <AiOutlineCheckCircle className="text-green-600 dark:text-green-400" size={20} />
+                              )}
                             </div>
-                            <div className="mt-2 text-sm text-blue-600 dark:text-blue-400">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                               {formatPrice(cls.price)}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {cls.description}
                             </div>
                           </button>
                         ))}

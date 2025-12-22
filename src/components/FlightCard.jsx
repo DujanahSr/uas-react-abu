@@ -44,7 +44,9 @@ const FlightCard = ({ flight, onSelect }) => {
               <FaPlane size={14} className="text-white" />
             </div>
           </div>
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">{flight.class}</div>
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Semua Kelas Tersedia
+          </div>
         </div>
 
         {/* Arrival */}
@@ -68,8 +70,12 @@ const FlightCard = ({ flight, onSelect }) => {
         
         <div className="flex items-center space-x-4">
           <div className="text-right">
-            <div className="text-2xl font-bold text-blue-600">{formatPrice(flight.price)}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">per orang</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {formatPrice(flight.prices?.economy || flight.price)}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Mulai dari (Ekonomi)
+            </div>
           </div>
           
           <button
