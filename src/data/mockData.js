@@ -1,154 +1,995 @@
-// Data mock untuk aplikasi booking tiket pesawat
+// Data mock untuk aplikasi booking tiket pesawat - Opsi 3 (Struktur Siap API)
+// Format data konsisten dan siap untuk upgrade ke API nanti
+
+// Helper untuk generate dates
+const getDate = (daysFromNow) => {
+  const date = new Date();
+  date.setDate(date.getDate() + daysFromNow);
+  return date.toISOString().split('T')[0];
+};
+
+// Data Penerbangan Lengkap (25-30 penerbangan)
 export const flightsData = [
+  // Jakarta - Denpasar
   {
     id: 'FL001',
     flightNumber: 'GA-123',
     airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
     from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
     to: 'Denpasar (DPS)',
+    toCode: 'DPS',
     departureTime: '08:00',
     arrivalTime: '11:30',
-    departureDate: '2025-12-23',
-    price: 1200000,
+    departureDate: getDate(5),
+    arrivalDate: getDate(5),
     duration: '3j 30m',
+    durationMinutes: 210,
+    price: 1200000,
+    prices: {
+      economy: 1200000,
+      business: 2500000,
+      first: 5000000
+    },
     class: 'Ekonomi',
     availableSeats: 24,
-    status: 'Tersedia'
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 3',
+    gate: 'A12',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
   },
   {
     id: 'FL002',
     flightNumber: 'ID-456',
     airline: 'Lion Air',
+    airlineCode: 'ID',
     from: 'Jakarta (CGK)',
-    to: 'Surabaya (SUB)',
-    departureTime: '09:15',
-    arrivalTime: '10:45',
-    departureDate: '2025-12-29',
-    price: 650000,
-    duration: '1j 30m',
+    fromCode: 'CGK',
+    to: 'Denpasar (DPS)',
+    toCode: 'DPS',
+    departureTime: '10:15',
+    arrivalTime: '13:45',
+    departureDate: getDate(5),
+    arrivalDate: getDate(5),
+    duration: '3j 30m',
+    durationMinutes: 210,
+    price: 950000,
+    prices: {
+      economy: 950000,
+      business: 2000000,
+      first: 4000000
+    },
     class: 'Ekonomi',
     availableSeats: 45,
-    status: 'Tersedia'
+    totalSeats: 215,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 1',
+    gate: 'B5',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
   },
   {
     id: 'FL003',
-    flightNumber: 'AK-789',
-    airline: 'AirAsia',
+    flightNumber: 'QZ-789',
+    airline: 'Citilink',
+    airlineCode: 'QZ',
     from: 'Jakarta (CGK)',
-    to: 'Singapore (SIN)',
+    fromCode: 'CGK',
+    to: 'Denpasar (DPS)',
+    toCode: 'DPS',
     departureTime: '14:20',
-    arrivalTime: '16:10',
-    departureDate: '2024-12-15',
+    arrivalTime: '17:50',
+    departureDate: getDate(5),
+    arrivalDate: getDate(5),
+    duration: '3j 30m',
+    durationMinutes: 210,
     price: 850000,
-    duration: '1j 50m',
+    prices: {
+      economy: 850000,
+      business: 1800000,
+      first: 3500000
+    },
     class: 'Ekonomi',
     availableSeats: 12,
-    status: 'Hampir Penuh'
+    totalSeats: 180,
+    status: 'Hampir Penuh',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'C8',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
   },
+  // Jakarta - Surabaya
   {
     id: 'FL004',
-    flightNumber: 'GA-456',
-    airline: 'Garuda Indonesia',
-    from: 'Surabaya (SUB)',
-    to: 'Jakarta (CGK)',
-    departureTime: '12:30',
-    arrivalTime: '14:00',
-    departureDate: '2024-12-15',
-    price: 700000,
+    flightNumber: 'ID-234',
+    airline: 'Lion Air',
+    airlineCode: 'ID',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Surabaya (SUB)',
+    toCode: 'SUB',
+    departureTime: '09:15',
+    arrivalTime: '10:45',
+    departureDate: getDate(3),
+    arrivalDate: getDate(3),
     duration: '1j 30m',
+    durationMinutes: 90,
+    price: 650000,
+    prices: {
+      economy: 650000,
+      business: 1500000,
+      first: 3000000
+    },
     class: 'Ekonomi',
-    availableSeats: 38,
-    status: 'Tersedia'
+    availableSeats: 45,
+    totalSeats: 215,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 1',
+    gate: 'B3',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
   },
   {
     id: 'FL005',
-    flightNumber: 'ID-789',
-    airline: 'Lion Air',
-    from: 'Denpasar (DPS)',
-    to: 'Jakarta (CGK)',
-    departureTime: '16:45',
-    arrivalTime: '18:15',
-    departureDate: '2025-12-27',
-    price: 1100000,
+    flightNumber: 'GA-567',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Surabaya (SUB)',
+    toCode: 'SUB',
+    departureTime: '11:30',
+    arrivalTime: '13:00',
+    departureDate: getDate(3),
+    arrivalDate: getDate(3),
     duration: '1j 30m',
+    durationMinutes: 90,
+    price: 750000,
+    prices: {
+      economy: 750000,
+      business: 1800000,
+      first: 3500000
+    },
     class: 'Ekonomi',
-    availableSeats: 52,
-    status: 'Tersedia'
+    availableSeats: 38,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 3',
+    gate: 'A8',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
   },
+  // Jakarta - Singapore
   {
     id: 'FL006',
-    flightNumber: 'AK-123',
+    flightNumber: 'AK-789',
     airline: 'AirAsia',
-    from: 'Medan (KNO)',
-    to: 'Jakarta (CGK)',
-    departureTime: '07:30',
-    arrivalTime: '10:00',
-    departureDate: '2024-12-15',
-    price: 950000,
-    duration: '2j 30m',
+    airlineCode: 'AK',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Singapore (SIN)',
+    toCode: 'SIN',
+    departureTime: '14:20',
+    arrivalTime: '16:10',
+    departureDate: getDate(7),
+    arrivalDate: getDate(7),
+    duration: '1j 50m',
+    durationMinutes: 110,
+    price: 850000,
+    prices: {
+      economy: 850000,
+      business: 2000000,
+      first: 4000000
+    },
+    class: 'Ekonomi',
+    availableSeats: 12,
+    totalSeats: 180,
+    status: 'Hampir Penuh',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'D12',
+    baggageAllowance: 20,
+    amenities: ['Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL007',
+    flightNumber: 'GA-890',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Singapore (SIN)',
+    toCode: 'SIN',
+    departureTime: '16:45',
+    arrivalTime: '18:35',
+    departureDate: getDate(7),
+    arrivalDate: getDate(7),
+    duration: '1j 50m',
+    durationMinutes: 110,
+    price: 1200000,
+    prices: {
+      economy: 1200000,
+      business: 2800000,
+      first: 5500000
+    },
     class: 'Ekonomi',
     availableSeats: 28,
-    status: 'Tersedia'
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 3',
+    gate: 'A15',
+    baggageAllowance: 30,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  // Surabaya - Jakarta
+  {
+    id: 'FL008',
+    flightNumber: 'GA-456',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Surabaya (SUB)',
+    fromCode: 'SUB',
+    to: 'Jakarta (CGK)',
+    toCode: 'CGK',
+    departureTime: '12:30',
+    arrivalTime: '14:00',
+    departureDate: getDate(4),
+    arrivalDate: getDate(4),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 700000,
+    prices: {
+      economy: 700000,
+      business: 1700000,
+      first: 3200000
+    },
+    class: 'Ekonomi',
+    availableSeats: 38,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 1',
+    gate: 'A5',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  // Denpasar - Jakarta
+  {
+    id: 'FL009',
+    flightNumber: 'ID-789',
+    airline: 'Lion Air',
+    airlineCode: 'ID',
+    from: 'Denpasar (DPS)',
+    fromCode: 'DPS',
+    to: 'Jakarta (CGK)',
+    toCode: 'CGK',
+    departureTime: '16:45',
+    arrivalTime: '18:15',
+    departureDate: getDate(6),
+    arrivalDate: getDate(6),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 1100000,
+    prices: {
+      economy: 1100000,
+      business: 2300000,
+      first: 4500000
+    },
+    class: 'Ekonomi',
+    availableSeats: 52,
+    totalSeats: 215,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 1',
+    gate: 'B8',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  // Medan - Jakarta
+  {
+    id: 'FL010',
+    flightNumber: 'AK-123',
+    airline: 'AirAsia',
+    airlineCode: 'AK',
+    from: 'Medan (KNO)',
+    fromCode: 'KNO',
+    to: 'Jakarta (CGK)',
+    toCode: 'CGK',
+    departureTime: '07:30',
+    arrivalTime: '10:00',
+    departureDate: getDate(8),
+    arrivalDate: getDate(8),
+    duration: '2j 30m',
+    durationMinutes: 150,
+    price: 950000,
+    prices: {
+      economy: 950000,
+      business: 2100000,
+      first: 4200000
+    },
+    class: 'Ekonomi',
+    availableSeats: 28,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'C5',
+    baggageAllowance: 20,
+    amenities: ['Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  // Jakarta - Yogyakarta
+  {
+    id: 'FL011',
+    flightNumber: 'ID-321',
+    airline: 'Lion Air',
+    airlineCode: 'ID',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Yogyakarta (YIA)',
+    toCode: 'YIA',
+    departureTime: '13:20',
+    arrivalTime: '14:50',
+    departureDate: getDate(10),
+    arrivalDate: getDate(10),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 600000,
+    prices: {
+      economy: 600000,
+      business: 1400000,
+      first: 2800000
+    },
+    class: 'Ekonomi',
+    availableSeats: 35,
+    totalSeats: 215,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 1',
+    gate: 'B10',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  // Jakarta - Makassar
+  {
+    id: 'FL012',
+    flightNumber: 'GA-654',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Makassar (UPG)',
+    toCode: 'UPG',
+    departureTime: '09:00',
+    arrivalTime: '12:30',
+    departureDate: getDate(12),
+    arrivalDate: getDate(12),
+    duration: '3j 30m',
+    durationMinutes: 210,
+    price: 1300000,
+    prices: {
+      economy: 1300000,
+      business: 2700000,
+      first: 5200000
+    },
+    class: 'Ekonomi',
+    availableSeats: 22,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 3',
+    gate: 'A18',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  // More flights untuk variasi
+  {
+    id: 'FL013',
+    flightNumber: 'QZ-147',
+    airline: 'Citilink',
+    airlineCode: 'QZ',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Surabaya (SUB)',
+    toCode: 'SUB',
+    departureTime: '06:00',
+    arrivalTime: '07:30',
+    departureDate: getDate(2),
+    arrivalDate: getDate(2),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 580000,
+    prices: {
+      economy: 580000,
+      business: 1300000,
+      first: 2600000
+    },
+    class: 'Ekonomi',
+    availableSeats: 48,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'C3',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL014',
+    flightNumber: 'GA-258',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Denpasar (DPS)',
+    fromCode: 'DPS',
+    to: 'Jakarta (CGK)',
+    toCode: 'CGK',
+    departureTime: '08:30',
+    arrivalTime: '10:00',
+    departureDate: getDate(6),
+    arrivalDate: getDate(6),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 1250000,
+    prices: {
+      economy: 1250000,
+      business: 2600000,
+      first: 5100000
+    },
+    class: 'Ekonomi',
+    availableSeats: 18,
+    totalSeats: 180,
+    status: 'Hampir Penuh',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 1',
+    gate: 'A3',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL015',
+    flightNumber: 'ID-369',
+    airline: 'Lion Air',
+    airlineCode: 'ID',
+    from: 'Surabaya (SUB)',
+    fromCode: 'SUB',
+    to: 'Denpasar (DPS)',
+    toCode: 'DPS',
+    departureTime: '15:20',
+    arrivalTime: '16:50',
+    departureDate: getDate(9),
+    arrivalDate: getDate(9),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 720000,
+    prices: {
+      economy: 720000,
+      business: 1600000,
+      first: 3100000
+    },
+    class: 'Ekonomi',
+    availableSeats: 42,
+    totalSeats: 215,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 1',
+    gate: 'B12',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL016',
+    flightNumber: 'AK-741',
+    airline: 'AirAsia',
+    airlineCode: 'AK',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Kuala Lumpur (KUL)',
+    toCode: 'KUL',
+    departureTime: '11:15',
+    arrivalTime: '13:45',
+    departureDate: getDate(14),
+    arrivalDate: getDate(14),
+    duration: '2j 30m',
+    durationMinutes: 150,
+    price: 1100000,
+    prices: {
+      economy: 1100000,
+      business: 2400000,
+      first: 4700000
+    },
+    class: 'Ekonomi',
+    availableSeats: 31,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'D8',
+    baggageAllowance: 20,
+    amenities: ['Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL017',
+    flightNumber: 'GA-852',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Medan (KNO)',
+    toCode: 'KNO',
+    departureTime: '10:45',
+    arrivalTime: '13:15',
+    departureDate: getDate(11),
+    arrivalDate: getDate(11),
+    duration: '2j 30m',
+    durationMinutes: 150,
+    price: 1400000,
+    prices: {
+      economy: 1400000,
+      business: 2900000,
+      first: 5600000
+    },
+    class: 'Ekonomi',
+    availableSeats: 26,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 3',
+    gate: 'A22',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL018',
+    flightNumber: 'QZ-963',
+    airline: 'Citilink',
+    airlineCode: 'QZ',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Yogyakarta (YIA)',
+    toCode: 'YIA',
+    departureTime: '17:30',
+    arrivalTime: '19:00',
+    departureDate: getDate(13),
+    arrivalDate: getDate(13),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 620000,
+    prices: {
+      economy: 620000,
+      business: 1450000,
+      first: 2900000
+    },
+    class: 'Ekonomi',
+    availableSeats: 39,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'C15',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL019',
+    flightNumber: 'ID-159',
+    airline: 'Lion Air',
+    airlineCode: 'ID',
+    from: 'Makassar (UPG)',
+    fromCode: 'UPG',
+    to: 'Jakarta (CGK)',
+    toCode: 'CGK',
+    departureTime: '13:45',
+    arrivalTime: '17:15',
+    departureDate: getDate(15),
+    arrivalDate: getDate(15),
+    duration: '3j 30m',
+    durationMinutes: 210,
+    price: 1350000,
+    prices: {
+      economy: 1350000,
+      business: 2800000,
+      first: 5400000
+    },
+    class: 'Ekonomi',
+    availableSeats: 33,
+    totalSeats: 215,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 1',
+    gate: 'B18',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL020',
+    flightNumber: 'GA-357',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Denpasar (DPS)',
+    toCode: 'DPS',
+    departureTime: '19:00',
+    arrivalTime: '22:30',
+    departureDate: getDate(5),
+    arrivalDate: getDate(5),
+    duration: '3j 30m',
+    durationMinutes: 210,
+    price: 1150000,
+    prices: {
+      economy: 1150000,
+      business: 2400000,
+      first: 4800000
+    },
+    class: 'Ekonomi',
+    availableSeats: 15,
+    totalSeats: 180,
+    status: 'Hampir Penuh',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 3',
+    gate: 'A25',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL021',
+    flightNumber: 'AK-468',
+    airline: 'AirAsia',
+    airlineCode: 'AK',
+    from: 'Singapore (SIN)',
+    fromCode: 'SIN',
+    to: 'Jakarta (CGK)',
+    toCode: 'CGK',
+    departureTime: '10:30',
+    arrivalTime: '12:20',
+    departureDate: getDate(7),
+    arrivalDate: getDate(7),
+    duration: '1j 50m',
+    durationMinutes: 110,
+    price: 880000,
+    prices: {
+      economy: 880000,
+      business: 2100000,
+      first: 4100000
+    },
+    class: 'Ekonomi',
+    availableSeats: 25,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'D18',
+    baggageAllowance: 20,
+    amenities: ['Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL022',
+    flightNumber: 'ID-579',
+    airline: 'Lion Air',
+    airlineCode: 'ID',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Surabaya (SUB)',
+    toCode: 'SUB',
+    departureTime: '15:45',
+    arrivalTime: '17:15',
+    departureDate: getDate(3),
+    arrivalDate: getDate(3),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 680000,
+    prices: {
+      economy: 680000,
+      business: 1550000,
+      first: 3100000
+    },
+    class: 'Ekonomi',
+    availableSeats: 41,
+    totalSeats: 215,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 1',
+    gate: 'B7',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL023',
+    flightNumber: 'QZ-680',
+    airline: 'Citilink',
+    airlineCode: 'QZ',
+    from: 'Yogyakarta (YIA)',
+    fromCode: 'YIA',
+    to: 'Jakarta (CGK)',
+    toCode: 'CGK',
+    departureTime: '08:15',
+    arrivalTime: '09:45',
+    departureDate: getDate(10),
+    arrivalDate: getDate(10),
+    duration: '1j 30m',
+    durationMinutes: 90,
+    price: 590000,
+    prices: {
+      economy: 590000,
+      business: 1350000,
+      first: 2700000
+    },
+    class: 'Ekonomi',
+    availableSeats: 37,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'C12',
+    baggageAllowance: 15,
+    amenities: ['Entertainment'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL024',
+    flightNumber: 'GA-791',
+    airline: 'Garuda Indonesia',
+    airlineCode: 'GA',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Makassar (UPG)',
+    toCode: 'UPG',
+    departureTime: '13:20',
+    arrivalTime: '16:50',
+    departureDate: getDate(12),
+    arrivalDate: getDate(12),
+    duration: '3j 30m',
+    durationMinutes: 210,
+    price: 1280000,
+    prices: {
+      economy: 1280000,
+      business: 2650000,
+      first: 5100000
+    },
+    class: 'Ekonomi',
+    availableSeats: 29,
+    totalSeats: 180,
+    status: 'Tersedia',
+    aircraft: 'Boeing 737-800',
+    terminal: 'Terminal 3',
+    gate: 'A20',
+    baggageAllowance: 20,
+    amenities: ['WiFi', 'Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
+  },
+  {
+    id: 'FL025',
+    flightNumber: 'AK-802',
+    airline: 'AirAsia',
+    airlineCode: 'AK',
+    from: 'Jakarta (CGK)',
+    fromCode: 'CGK',
+    to: 'Denpasar (DPS)',
+    toCode: 'DPS',
+    departureTime: '06:30',
+    arrivalTime: '10:00',
+    departureDate: getDate(5),
+    arrivalDate: getDate(5),
+    duration: '3j 30m',
+    durationMinutes: 210,
+    price: 920000,
+    prices: {
+      economy: 920000,
+      business: 1950000,
+      first: 3900000
+    },
+    class: 'Ekonomi',
+    availableSeats: 19,
+    totalSeats: 180,
+    status: 'Hampir Penuh',
+    aircraft: 'Airbus A320',
+    terminal: 'Terminal 2',
+    gate: 'D5',
+    baggageAllowance: 20,
+    amenities: ['Entertainment', 'Meal'],
+    transit: false,
+    stops: 0
   }
 ];
 
+// Data Booking Lengkap
 export const bookingsData = [
   {
     id: 'BK001',
     bookingCode: 'FBK12345',
     passengerName: 'John Doe',
+    passengers: [
+      {
+        name: 'John Doe',
+        idNumber: '3201012345678901',
+        dob: '1990-05-15',
+        seat: '12A',
+        title: 'Mr'
+      }
+    ],
     email: 'john@example.com',
     phone: '081234567890',
+    flightId: 'FL001',
     flightNumber: 'GA-123',
     airline: 'Garuda Indonesia',
     route: 'Jakarta → Denpasar',
-    departureDate: '2024-12-15',
+    from: 'Jakarta (CGK)',
+    to: 'Denpasar (DPS)',
+    departureDate: getDate(5),
     departureTime: '08:00',
-    passengers: 2,
-    totalPrice: 2400000,
+    arrivalTime: '11:30',
+    totalPrice: 1200000,
+    basePrice: 1200000,
+    tax: 0,
+    addons: [],
     status: 'Confirmed',
     paymentStatus: 'Paid',
-    bookingDate: '2024-11-20',
-    class: 'Ekonomi'
+    paymentMethod: 'Credit Card',
+    bookingDate: getDate(-10),
+    class: 'Ekonomi',
+    seats: ['12A']
   },
   {
     id: 'BK002',
     bookingCode: 'FBK67890',
     passengerName: 'Jane Smith',
+    passengers: [
+      {
+        name: 'Jane Smith',
+        idNumber: '3201012345678902',
+        dob: '1992-08-20',
+        seat: '15B',
+        title: 'Mrs'
+      }
+    ],
     email: 'jane@example.com',
     phone: '081234567891',
+    flightId: 'FL004',
     flightNumber: 'ID-456',
     airline: 'Lion Air',
     route: 'Jakarta → Surabaya',
-    departureDate: '2024-12-15',
+    from: 'Jakarta (CGK)',
+    to: 'Surabaya (SUB)',
+    departureDate: getDate(3),
     departureTime: '09:15',
-    passengers: 1,
+    arrivalTime: '10:45',
     totalPrice: 650000,
+    basePrice: 650000,
+    tax: 0,
+    addons: [],
     status: 'Confirmed',
     paymentStatus: 'Paid',
-    bookingDate: '2024-11-21',
-    class: 'Ekonomi'
+    paymentMethod: 'E-Wallet',
+    bookingDate: getDate(-8),
+    class: 'Ekonomi',
+    seats: ['15B']
   },
   {
     id: 'BK003',
     bookingCode: 'FBK13579',
     passengerName: 'Michael Johnson',
+    passengers: [
+      {
+        name: 'Michael Johnson',
+        idNumber: '3201012345678903',
+        dob: '1988-12-10',
+        seat: '8C',
+        title: 'Mr'
+      },
+      {
+        name: 'Sarah Johnson',
+        idNumber: '3201012345678904',
+        dob: '1990-03-25',
+        seat: '8D',
+        title: 'Mrs'
+      },
+      {
+        name: 'Emma Johnson',
+        idNumber: '3201012345678905',
+        dob: '2015-07-15',
+        seat: '8E',
+        title: 'Ms'
+      }
+    ],
     email: 'michael@example.com',
     phone: '081234567892',
+    flightId: 'FL006',
     flightNumber: 'AK-789',
     airline: 'AirAsia',
     route: 'Jakarta → Singapore',
-    departureDate: '2024-12-15',
+    from: 'Jakarta (CGK)',
+    to: 'Singapore (SIN)',
+    departureDate: getDate(7),
     departureTime: '14:20',
-    passengers: 3,
+    arrivalTime: '16:10',
     totalPrice: 2550000,
+    basePrice: 2550000,
+    tax: 0,
+    addons: [],
     status: 'Pending',
     paymentStatus: 'Pending',
-    bookingDate: '2024-11-22',
-    class: 'Ekonomi'
+    paymentMethod: null,
+    bookingDate: getDate(-5),
+    class: 'Ekonomi',
+    seats: ['8C', '8D', '8E']
   }
 ];
 
+// Data Master - Airlines
+export const airlines = [
+  { code: 'GA', name: 'Garuda Indonesia', logo: 'GA' },
+  { code: 'ID', name: 'Lion Air', logo: 'ID' },
+  { code: 'AK', name: 'AirAsia', logo: 'AK' },
+  { code: 'QZ', name: 'Citilink', logo: 'QZ' }
+];
+
+// Data Master - Airports
+export const airports = [
+  { code: 'CGK', name: 'Soekarno-Hatta', city: 'Jakarta' },
+  { code: 'DPS', name: 'Ngurah Rai', city: 'Denpasar' },
+  { code: 'SUB', name: 'Juanda', city: 'Surabaya' },
+  { code: 'KNO', name: 'Kualanamu', city: 'Medan' },
+  { code: 'UPG', name: 'Hasanuddin', city: 'Makassar' },
+  { code: 'YIA', name: 'Yogyakarta International', city: 'Yogyakarta' },
+  { code: 'SIN', name: 'Changi', city: 'Singapore' },
+  { code: 'KUL', name: 'KLIA', city: 'Kuala Lumpur' }
+];
+
+// Statistik Maskapai
 export const airlineStats = [
   { name: 'Garuda Indonesia', sales: 245, color: 'bg-blue-500', percentage: 100 },
   { name: 'Lion Air', sales: 198, color: 'bg-red-500', percentage: 80.8 },
@@ -156,24 +997,33 @@ export const airlineStats = [
   { name: 'Citilink', sales: 132, color: 'bg-green-500', percentage: 53.9 },
 ];
 
+// Rute Populer
 export const popularRoutes = [
   {
     route: 'Jakarta - Denpasar',
+    from: 'CGK',
+    to: 'DPS',
     bookings: 125,
     revenue: 150000000
   },
   {
     route: 'Jakarta - Surabaya',
+    from: 'CGK',
+    to: 'SUB',
     bookings: 98,
     revenue: 63700000
   },
   {
     route: 'Jakarta - Singapore',
+    from: 'CGK',
+    to: 'SIN',
     bookings: 87,
     revenue: 73950000
   },
   {
     route: 'Jakarta - Medan',
+    from: 'CGK',
+    to: 'KNO',
     bookings: 76,
     revenue: 72200000
   }
@@ -184,23 +1034,78 @@ export const searchFlights = (filters) => {
   let filtered = [...flightsData];
   
   if (filters.from) {
-    filtered = filtered.filter(flight => flight.from.includes(filters.from));
+    const fromFilter = filters.from.toLowerCase().trim();
+    filtered = filtered.filter(flight => {
+      // Match dengan berbagai format: "Jakarta", "Jakarta (CGK)", "CGK"
+      const fromMatch = 
+        flight.from.toLowerCase().includes(fromFilter) || 
+        flight.fromCode.toLowerCase() === fromFilter ||
+        flight.from.toLowerCase().startsWith(fromFilter) ||
+        flight.from.toLowerCase().split(' ')[0] === fromFilter;
+      return fromMatch;
+    });
   }
   
   if (filters.to) {
-    filtered = filtered.filter(flight => flight.to.includes(filters.to));
+    const toFilter = filters.to.toLowerCase().trim();
+    filtered = filtered.filter(flight => {
+      // Match dengan berbagai format: "Denpasar", "Denpasar (DPS)", "DPS"
+      const toMatch = 
+        flight.to.toLowerCase().includes(toFilter) || 
+        flight.toCode.toLowerCase() === toFilter ||
+        flight.to.toLowerCase().startsWith(toFilter) ||
+        flight.to.toLowerCase().split(' ')[0] === toFilter;
+      return toMatch;
+    });
   }
   
   if (filters.departureDate) {
-    filtered = filtered.filter(flight => flight.departureDate === filters.departureDate);
+    // Normalize date format untuk memastikan matching
+    const filterDate = filters.departureDate.trim();
+    filtered = filtered.filter(flight => {
+      // Match exact date
+      const match = flight.departureDate === filterDate;
+      // Debug logging untuk troubleshooting
+      if (!match && filters.from && filters.to) {
+        console.log('Date mismatch:', {
+          filterDate,
+          flightDate: flight.departureDate,
+          flight: `${flight.from} → ${flight.to}`
+        });
+      }
+      return match;
+    });
   }
   
   if (filters.class) {
-    filtered = filtered.filter(flight => flight.class.toLowerCase() === filters.class.toLowerCase());
+    const classMap = {
+      'economy': 'Ekonomi',
+      'business': 'Bisnis',
+      'first': 'First'
+    };
+    const classFilter = classMap[filters.class.toLowerCase()] || filters.class;
+    filtered = filtered.filter(flight => 
+      flight.class.toLowerCase() === classFilter.toLowerCase()
+    );
   }
   
   if (filters.passengers) {
     filtered = filtered.filter(flight => flight.availableSeats >= parseInt(filters.passengers));
+  }
+  
+  if (filters.airline) {
+    filtered = filtered.filter(flight => 
+      flight.airline.toLowerCase().includes(filters.airline.toLowerCase()) ||
+      flight.airlineCode === filters.airline
+    );
+  }
+  
+  if (filters.maxPrice) {
+    filtered = filtered.filter(flight => flight.price <= parseInt(filters.maxPrice));
+  }
+  
+  if (filters.minPrice) {
+    filtered = filtered.filter(flight => flight.price >= parseInt(filters.minPrice));
   }
   
   return filtered;
@@ -217,6 +1122,7 @@ export const formatPrice = (price) => {
 
 // Fungsi helper untuk format tanggal
 export const formatDate = (dateString) => {
+  if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -224,16 +1130,55 @@ export const formatDate = (dateString) => {
   });
 };
 
+// Fungsi helper untuk format waktu
+export const formatTime = (timeString) => {
+  return timeString || '';
+};
+
 // Fungsi helper untuk mendapatkan status badge
 export const getStatusBadge = (status) => {
   const statusClasses = {
-    'Tersedia': 'bg-green-100 text-green-800',
-    'Hampir Penuh': 'bg-yellow-100 text-yellow-800',
-    'Penuh': 'bg-red-100 text-red-800',
-    'Confirmed': 'bg-green-100 text-green-800',
-    'Pending': 'bg-yellow-100 text-yellow-800',
-    'Cancelled': 'bg-red-100 text-red-800'
+    'Tersedia': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    'Hampir Penuh': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    'Penuh': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    'Confirmed': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    'Pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    'Cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    'Paid': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    'Unpaid': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+    'Failed': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
   };
   
-  return statusClasses[status] || 'bg-gray-100 text-gray-800';
+  return statusClasses[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+};
+
+// Fungsi helper untuk mendapatkan durasi dalam menit
+export const getDurationMinutes = (durationString) => {
+  const match = durationString.match(/(\d+)j\s*(\d+)m/);
+  if (match) {
+    return parseInt(match[1]) * 60 + parseInt(match[2]);
+  }
+  return 0;
+};
+
+// Fungsi helper untuk sort flights
+export const sortFlights = (flights, sortBy) => {
+  const sorted = [...flights];
+  
+  switch (sortBy) {
+    case 'price-asc':
+      return sorted.sort((a, b) => a.price - b.price);
+    case 'price-desc':
+      return sorted.sort((a, b) => b.price - a.price);
+    case 'duration-asc':
+      return sorted.sort((a, b) => a.durationMinutes - b.durationMinutes);
+    case 'duration-desc':
+      return sorted.sort((a, b) => b.durationMinutes - a.durationMinutes);
+    case 'departure-asc':
+      return sorted.sort((a, b) => a.departureTime.localeCompare(b.departureTime));
+    case 'departure-desc':
+      return sorted.sort((a, b) => b.departureTime.localeCompare(a.departureTime));
+    default:
+      return sorted;
+  }
 };

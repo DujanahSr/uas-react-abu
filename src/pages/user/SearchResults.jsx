@@ -1,46 +1,390 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import FlightCard from '../../components/FlightCard';
 import { useData } from '../../context/DataContext';
+import { searchFlights, sortFlights, airlines } from '../../data/mockData';
+import {
+  AiOutlineFilter,
+  AiOutlineSortAscending,
+  AiOutlineClose,
+  AiOutlineDollarCircle,
+  AiOutlineClockCircle,
+  AiOutlineLeft,
+  AiOutlineRight
+} from 'react-icons/ai';
+import { FaPlane } from 'react-icons/fa';
 
 const SearchResults = () => {
   const location = useLocation();
   const { flights } = useData();
   const navigate = useNavigate();
-  const filters = location.state?.filters || {};
-
-  const filteredFlights = flights.filter(flight => {
-    if (filters.from && !flight.from.includes(filters.from)) return false;
-    if (filters.to && !flight.to.includes(filters.to)) return false;
-    if (filters.departureDate && flight.departureDate !== filters.departureDate) return false;
-    if (filters.class && flight.class.toLowerCase() !== filters.class.toLowerCase()) return false;
-    if (filters.passengers && flight.availableSeats < parseInt(filters.passengers)) return false;
-    return true;
+  
+  const [showFilters, setShowFilters] = useState(false);
+  const [filteredFlights, setFilteredFlights] = useState([]);
+  const [sortBy, setSortBy] = useState('price-asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const [filters, setFilters] = useState({
+    maxPrice: '',
+    minPrice: '',
+    airline: '',
+    departureTime: '',
+    duration: ''
   });
+
+  // Update filters when location.state changes (when navigating from search form)
+  useEffect(() => {
+    const initialFilters = location.state?.filters || {};
+    if (Object.keys(initialFilters).length > 0) {
+      setFilters(prev => ({
+        ...prev,
+        ...initialFilters
+      }));
+    }
+    // Cleanup: reset state when component unmounts or route changes
+    return () => {
+      setCurrentPage(1);
+      setFilteredFlights([]);
+    };
+  }, [location.pathname, location.state]);
+
+  useEffect(() => {
+    const initialFilters = location.state?.filters || {};
+    
+    // Debug: log filters untuk troubleshooting
+    console.log('Search Filters:', initialFilters);
+    
+    let results = searchFlights(initialFilters);
+    
+    // Debug: log hasil pencarian
+    console.log('Search Results:', results.length, 'flights found');
+    if (results.length === 0 && initialFilters.from && initialFilters.to) {
+      console.log('No flights found for:', initialFilters);
+      // Coba cari tanpa filter tanggal untuk debug
+      const debugFilters = { ...initialFilters };
+      delete debugFilters.departureDate;
+      const debugResults = searchFlights(debugFilters);
+      console.log('Debug search (without date):', debugResults.length, 'flights found');
+    }
+    
+    // Apply additional filters
+    if (filters.maxPrice) {
+      results = results.filter(f => f.price <= parseInt(filters.maxPrice));
+    }
+    if (filters.minPrice) {
+      results = results.filter(f => f.price >= parseInt(filters.minPrice));
+    }
+    if (filters.airline) {
+      results = results.filter(f => 
+        f.airline.toLowerCase().includes(filters.airline.toLowerCase()) ||
+        f.airlineCode === filters.airline
+      );
+    }
+    if (filters.departureTime) {
+      const [start, end] = filters.departureTime.split('-');
+      results = results.filter(f => {
+        const time = parseInt(f.departureTime.split(':')[0]);
+        return time >= parseInt(start) && time <= parseInt(end);
+      });
+    }
+    if (filters.duration) {
+      const maxDuration = parseInt(filters.duration);
+      results = results.filter(f => f.durationMinutes <= maxDuration);
+    }
+
+    // Apply sorting
+    results = sortFlights(results, sortBy);
+    setFilteredFlights(results);
+    // Reset to page 1 when filters or sort change
+    setCurrentPage(1);
+  }, [location.state, filters, sortBy, flights]);
 
   const handleSelectFlight = (flight) => {
     navigate(`/flight/${flight.id}`);
   };
 
+  const clearFilters = () => {
+    setFilters({
+      maxPrice: '',
+      minPrice: '',
+      airline: '',
+      departureTime: '',
+      duration: ''
+    });
+    setCurrentPage(1);
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredFlights.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFlights = filteredFlights.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const maxPrice = Math.max(...flights.map(f => f.price), 0);
+  const minPrice = Math.min(...flights.map(f => f.price), 0);
+
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main className="px-4 py-8 mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Hasil Pencarian
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              {filteredFlights.length} penerbangan ditemukan
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <AiOutlineFilter size={18} />
+              Filter
+            </button>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="price-asc">Harga Terendah</option>
+              <option value="price-desc">Harga Tertinggi</option>
+              <option value="duration-asc">Durasi Terpendek</option>
+              <option value="departure-asc">Waktu Berangkat (Awal)</option>
+              <option value="departure-desc">Waktu Berangkat (Akhir)</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-4">
+          {/* Filter Sidebar */}
+          <div className={`lg:col-span-1 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+            <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700 sticky top-4">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <AiOutlineFilter size={20} />
+                  Filter
+                </h2>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <AiOutlineClose size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Harga */}
+                <div>
+                  <label className="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <AiOutlineDollarCircle size={16} />
+                    Harga
+                  </label>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block mb-1 text-xs text-gray-600 dark:text-gray-400">Min</label>
+                      <input
+                        type="number"
+                        value={filters.minPrice}
+                        onChange={(e) => setFilters({...filters, minPrice: e.target.value})}
+                        placeholder={minPrice.toLocaleString('id-ID')}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1 text-xs text-gray-600 dark:text-gray-400">Max</label>
+                      <input
+                        type="number"
+                        value={filters.maxPrice}
+                        onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
+                        placeholder={maxPrice.toLocaleString('id-ID')}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Maskapai */}
+                <div>
+                  <label className="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <FaPlane size={16} />
+                    Maskapai
+                  </label>
+                  <select
+                    value={filters.airline}
+                    onChange={(e) => setFilters({...filters, airline: e.target.value})}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Maskapai</option>
+                    {airlines.map(airline => (
+                      <option key={airline.code} value={airline.code}>
+                        {airline.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Waktu Keberangkatan */}
+                <div>
+                  <label className="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <AiOutlineClockCircle size={16} />
+                    Waktu Keberangkatan
+                  </label>
+                  <select
+                    value={filters.departureTime}
+                    onChange={(e) => setFilters({...filters, departureTime: e.target.value})}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Waktu</option>
+                    <option value="0-6">00:00 - 06:00</option>
+                    <option value="6-12">06:00 - 12:00</option>
+                    <option value="12-18">12:00 - 18:00</option>
+                    <option value="18-24">18:00 - 24:00</option>
+                  </select>
+                </div>
+
+                {/* Durasi */}
+                <div>
+                  <label className="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <AiOutlineClockCircle size={16} />
+                    Durasi Maksimal
+                  </label>
+                  <select
+                    value={filters.duration}
+                    onChange={(e) => setFilters({...filters, duration: e.target.value})}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Durasi</option>
+                    <option value="90">≤ 1.5 jam</option>
+                    <option value="180">≤ 3 jam</option>
+                    <option value="300">≤ 5 jam</option>
+                    <option value="9999">Semua</option>
+                  </select>
+                </div>
+
+                {/* Clear Filters */}
+                <button
+                  onClick={clearFilters}
+                  className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Results */}
+          <div className="lg:col-span-3">
         {filteredFlights.length === 0 ? (
           <div className="py-32 text-center">
-            <div className="mb-8 text-gray-300 text-9xl dark:text-gray-700">✈️</div>
-            <h2 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">Tidak ada penerbangan</h2>
-            <p className="mb-8 text-xl text-gray-600 dark:text-gray-400">Coba ubah tanggal atau rute pencarian</p>
-            <button onClick={() => navigate('/')} className="px-8 py-4 text-lg font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700">
+                <FaPlane size={80} className="mx-auto mb-6 text-gray-300 dark:text-gray-700" />
+                <h2 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
+                  Tidak ada penerbangan
+                </h2>
+                <p className="mb-8 text-xl text-gray-600 dark:text-gray-400">
+                  Coba ubah tanggal atau rute pencarian
+                </p>
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-8 py-4 text-lg font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700"
+                >
               Cari Lagi
             </button>
           </div>
         ) : (
-          <div className="grid max-w-6xl gap-8 mx-auto">
-            {filteredFlights.map(flight => (
-              <FlightCard key={flight.id} flight={flight} onSelect={handleSelectFlight} />
-            ))}
+              <>
+                <div className="space-y-4">
+                  {paginatedFlights.map(flight => (
+                    <FlightCard
+                      key={flight.id}
+                      flight={flight}
+                      onSelect={handleSelectFlight}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col items-center justify-between gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 sm:flex-row">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Menampilkan <strong className="text-gray-900 dark:text-white">{startIndex + 1}</strong> - <strong className="text-gray-900 dark:text-white">{Math.min(endIndex, filteredFlights.length)}</strong> dari <strong className="text-gray-900 dark:text-white">{filteredFlights.length}</strong> penerbangan
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={`flex items-center gap-1 px-4 py-2 text-sm rounded-lg transition-colors ${
+                          currentPage === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <AiOutlineLeft size={16} />
+                        Sebelumnya
+                      </button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          // Show first page, last page, current page, and pages around current
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => handlePageChange(page)}
+                                className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                                  currentPage === page
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            );
+                          } else if (
+                            page === currentPage - 2 ||
+                            page === currentPage + 2
+                          ) {
+                            return (
+                              <span key={page} className="px-2 text-gray-500 dark:text-gray-400">
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={`flex items-center gap-1 px-4 py-2 text-sm rounded-lg transition-colors ${
+                          currentPage === totalPages
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        Selanjutnya
+                        <AiOutlineRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

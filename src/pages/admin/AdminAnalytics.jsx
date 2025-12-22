@@ -1,148 +1,322 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../../components/Header';
-import { AiOutlineRise, AiOutlineFall } from 'react-icons/ai';
+import { useData } from '../../context/DataContext';
+import { formatPrice, formatDate, airlineStats, popularRoutes } from '../../data/mockData';
+import {
+  AiOutlineDollarCircle,
+  AiOutlineCalendar,
+  AiOutlineRise,
+  AiOutlineBarChart,
+  AiOutlineLineChart,
+  AiOutlineDownload
+} from 'react-icons/ai';
+import { FaPlane } from 'react-icons/fa';
 
 const AdminAnalytics = () => {
-  const revenueData = [
-    { month: 'Jan', revenue: 45, bookings: 120 },
-    { month: 'Feb', revenue: 52, bookings: 145 },
-    { month: 'Mar', revenue: 48, bookings: 138 },
-    { month: 'Apr', revenue: 61, bookings: 165 },
-    { month: 'May', revenue: 55, bookings: 152 },
-    { month: 'Jun', revenue: 68, bookings: 180 },
-    { month: 'Jul', revenue: 72, bookings: 195 },
-    { month: 'Aug', revenue: 65, bookings: 178 },
-    { month: 'Sep', revenue: 70, bookings: 188 },
-    { month: 'Oct', revenue: 75, bookings: 205 },
-    { month: 'Nov', revenue: 80, bookings: 220 },
-    { month: 'Dec', revenue: 85, bookings: 235 },
-  ];
+  const { bookings, flights } = useData();
+  const [dateRange, setDateRange] = useState('month');
 
-  const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
-  const maxBookings = Math.max(...revenueData.map(d => d.bookings));
+  // Calculate analytics
+  const totalRevenue = bookings
+    .filter(b => b.paymentStatus === 'Paid')
+    .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+  const totalBookings = bookings.length;
+  const confirmedBookings = bookings.filter(b => b.status === 'Confirmed').length;
+  const pendingBookings = bookings.filter(b => b.status === 'Pending').length;
+  const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
+
+  const totalTickets = bookings.reduce((sum, b) => 
+    sum + (b.passengers?.length || b.passengers || 1), 0
+  );
+
+  const averageBookingValue = totalBookings > 0 
+    ? totalRevenue / totalBookings 
+    : 0;
+
+  // Revenue by airline
+  const revenueByAirline = airlineStats.map(airline => ({
+    ...airline,
+    revenue: Math.round(totalRevenue * (airline.percentage / 100))
+  }));
+
+  // Bookings trend (last 7 days)
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - i));
+    return date.toISOString().split('T')[0];
+  });
+
+  const bookingsTrend = last7Days.map(date => ({
+    date,
+    count: bookings.filter(b => b.bookingDate === date).length,
+    revenue: bookings
+      .filter(b => b.bookingDate === date && b.paymentStatus === 'Paid')
+      .reduce((sum, b) => sum + (b.totalPrice || 0), 0)
+  }));
+
+  const maxCount = Math.max(...bookingsTrend.map(t => t.count), 1);
+  const maxRevenue = Math.max(...bookingsTrend.map(t => t.revenue), 1);
 
   return (
-    <div>
+    <div className="min-h-screen transition-colors bg-gray-50 dark:bg-gray-900">
       <Header 
-        title="Analitik" 
-        subtitle="Analisis data dan performa pemesanan tiket" 
+        title="Analitik & Laporan" 
+        subtitle="Analisis data pemesanan dan pendapatan"
+        onSearch={null}
       />
       
-      <main className="p-6">
-        {/* Chart Section */}
-        <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-2">
-          {/* Revenue Chart */}
-          <div className="p-8 transition-all bg-white border border-gray-200 shadow-lg dark:bg-gray-800 rounded-2xl dark:border-gray-700">
-            <h3 className="mb-8 text-2xl font-bold text-gray-800 dark:text-white">Pendapatan Bulanan (dalam juta)</h3>
-            <div className="flex items-end justify-between px-4 h-80">
-              {revenueData.map((data, index) => (
-                <div key={index} className="flex flex-col items-center flex-1">
-                  <div 
-                    className="w-full transition-all rounded-t-lg shadow-md max-w-16 bg-gradient-to-t from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500"
-                    style={{ height: `${(data.revenue / maxRevenue) * 260}px` }}
-                  ></div>
-                  <div className="mt-4 text-sm font-medium text-gray-600 dark:text-gray-300">{data.month}</div>
-                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{data.revenue}M</div>
+      <div className="p-4 md:p-6">
+        {/* Date Range Selector */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
+            <span className="font-medium text-gray-700 dark:text-gray-300">Periode:</span>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="today">Hari Ini</option>
+              <option value="week">Minggu Ini</option>
+              <option value="month">Bulan Ini</option>
+              <option value="year">Tahun Ini</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatPrice(totalRevenue)}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Total Revenue</div>
+              </div>
+              <AiOutlineDollarCircle size={32} className="text-green-500" />
+            </div>
+          </div>
+
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {totalBookings}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Total Bookings</div>
+              </div>
+              <AiOutlineCalendar size={32} className="text-blue-500" />
+            </div>
+          </div>
+
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {totalTickets}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Tiket Terjual</div>
+              </div>
+              <FaPlane size={32} className="text-purple-500" />
+            </div>
+          </div>
+
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatPrice(averageBookingValue)}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Avg Booking Value</div>
+              </div>
+              <AiOutlineRise size={32} className="text-orange-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Bookings Trend */}
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <AiOutlineLineChart size={20} />
+                Trend Pemesanan (7 Hari Terakhir)
+              </h3>
+            </div>
+            <div className="space-y-4">
+              {bookingsTrend.map((day, index) => (
+                <div key={index}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {formatDate(day.date)}
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {day.count} booking
+                    </span>
+                  </div>
+                  <div className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700">
+                    <div
+                      className="h-4 bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${(day.count / maxCount) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Bookings Chart */}
-          <div className="p-8 transition-all bg-white border border-gray-200 shadow-lg dark:bg-gray-800 rounded-2xl dark:border-gray-700">
-            <h3 className="mb-8 text-2xl font-bold text-gray-800 dark:text-white">Jumlah Pemesanan</h3>
-            <div className="flex items-end justify-between px-4 h-80">
-              {revenueData.map((data, index) => (
-                <div key={index} className="flex flex-col items-center flex-1">
-                  <div 
-                    className="w-full transition-all rounded-t-lg shadow-md max-w-16 bg-gradient-to-t from-green-600 to-green-400 hover:from-green-700 hover:to-green-500"
-                    style={{ height: `${(data.bookings / maxBookings) * 260}px` }}
-                  ></div>
-                  <div className="mt-4 text-sm font-medium text-gray-600 dark:text-gray-300">{data.month}</div>
-                  <div className="text-lg font-bold text-green-600 dark:text-green-400">{data.bookings}</div>
+          {/* Revenue Trend */}
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <AiOutlineBarChart size={20} />
+                Trend Revenue (7 Hari Terakhir)
+              </h3>
+            </div>
+            <div className="space-y-4">
+              {bookingsTrend.map((day, index) => (
+                <div key={index}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {formatDate(day.date)}
+                    </span>
+                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                      {formatPrice(day.revenue)}
+                    </span>
+                  </div>
+                  <div className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700">
+                    <div
+                      className="h-4 bg-green-600 rounded-full transition-all"
+                      style={{ width: `${(day.revenue / maxRevenue) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-8 mb-10 md:grid-cols-3">
-          <div className="p-8 transition-shadow bg-white border border-gray-200 shadow-lg dark:bg-gray-800 rounded-2xl dark:border-gray-700 hover:shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="text-xl font-bold text-gray-800 dark:text-white">Rata-rata Tiket</h4>
-              <AiOutlineRise className="text-green-500" size={32} />
+        {/* Revenue by Airline */}
+        <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-2">
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <FaPlane size={20} />
+              Revenue by Airline
+            </h3>
+            <div className="space-y-4">
+              {revenueByAirline.map((airline, index) => (
+                <div key={index}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {airline.name}
+                    </span>
+                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                      {formatPrice(airline.revenue)}
+                    </span>
+                  </div>
+                  <div className="w-full h-3 bg-gray-200 rounded-full dark:bg-gray-700">
+                    <div
+                      className={`h-3 rounded-full ${airline.color}`}
+                      style={{ width: `${airline.percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <p className="mb-2 text-4xl font-bold text-gray-800 dark:text-white">Rp 1.2M</p>
-            <p className="text-lg font-medium text-green-600 dark:text-green-400">+12.5% dari bulan lalu</p>
           </div>
 
-          <div className="p-8 transition-shadow bg-white border border-gray-200 shadow-lg dark:bg-gray-800 rounded-2xl dark:border-gray-700 hover:shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="text-xl font-bold text-gray-800 dark:text-white">Tingkat Pembatalan</h4>
-              <AiOutlineFall className="text-red-500" size={32} />
+          {/* Booking Status Distribution */}
+          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">
+              Distribusi Status Booking
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-700 dark:text-gray-300">Confirmed</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {confirmedBookings}
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-gray-200 rounded-full dark:bg-gray-700">
+                  <div
+                    className="h-3 bg-green-500 rounded-full"
+                    style={{ width: `${totalBookings > 0 ? (confirmedBookings / totalBookings) * 100 : 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-700 dark:text-gray-300">Pending</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {pendingBookings}
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-gray-200 rounded-full dark:bg-gray-700">
+                  <div
+                    className="h-3 bg-yellow-500 rounded-full"
+                    style={{ width: `${totalBookings > 0 ? (pendingBookings / totalBookings) * 100 : 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-700 dark:text-gray-300">Cancelled</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {cancelledBookings}
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-gray-200 rounded-full dark:bg-gray-700">
+                  <div
+                    className="h-3 bg-red-500 rounded-full"
+                    style={{ width: `${totalBookings > 0 ? (cancelledBookings / totalBookings) * 100 : 0}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
-            <p className="mb-2 text-4xl font-bold text-gray-800 dark:text-white">3.2%</p>
-            <p className="text-lg font-medium text-green-600 dark:text-green-400">-0.8% dari bulan lalu</p>
-          </div>
-
-          <div className="p-8 transition-shadow bg-white border border-gray-200 shadow-lg dark:bg-gray-800 rounded-2xl dark:border-gray-700 hover:shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="text-xl font-bold text-gray-800 dark:text-white">Kepuasan Pelanggan</h4>
-              <AiOutlineRise className="text-green-500" size={32} />
-            </div>
-            <p className="mb-2 text-4xl font-bold text-gray-800 dark:text-white">94.7%</p>
-            <p className="text-lg font-medium text-green-600 dark:text-green-400">+2.1% dari bulan lalu</p>
           </div>
         </div>
 
-        {/* Flight Performance Table */}
-        <div className="overflow-hidden bg-white border border-gray-200 shadow-lg dark:bg-gray-800 rounded-2xl dark:border-gray-700">
-          <div className="p-8">
-            <h3 className="mb-8 text-2xl font-bold text-gray-800 dark:text-white">Performa Rute Populer</h3>
+        {/* Top Routes */}
+        <div className="p-6 mt-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <AiOutlineRise size={20} />
+              Top Routes
+            </h3>
+            <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600">
+              <AiOutlineDownload size={16} />
+              Export
+            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-900/50">
+              <thead className="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
-                  <th className="px-8 py-5 text-sm font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">Rute</th>
-                  <th className="px-8 py-5 text-sm font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">Tiket Terjual</th>
-                  <th className="px-8 py-5 text-sm font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">Pendapatan</th>
-                  <th className="px-8 py-5 text-sm font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">Okupansi</th>
-                  <th className="px-8 py-5 text-sm font-semibold tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">Rating</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase dark:text-gray-300">
+                    Rute
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase dark:text-gray-300">
+                    Bookings
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase dark:text-gray-300">
+                    Revenue
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {[
-                  { route: 'Jakarta - Denpasar', sold: 245, revenue: '367.5M', occupancy: '92%', rating: '4.8' },
-                  { route: 'Jakarta - Surabaya', sold: 198, revenue: '158.4M', occupancy: '88%', rating: '4.6' },
-                  { route: 'Jakarta - Singapore', sold: 156, revenue: '187.2M', occupancy: '85%', rating: '4.7' },
-                  { route: 'Jakarta - Yogyakarta', sold: 132, revenue: '99M', occupancy: '82%', rating: '4.5' },
-                  { route: 'Jakarta - Makassar', sold: 98, revenue: '176.4M', occupancy: '78%', rating: '4.4' },
-                ].map((data, index) => (
-                  <tr key={index} className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="px-8 py-6 font-medium text-gray-800 dark:text-white">{data.route}</td>
-                    <td className="px-8 py-6 text-gray-700 dark:text-gray-300">{data.sold}</td>
-                    <td className="px-8 py-6 font-bold text-blue-600 dark:text-blue-400">{data.revenue}</td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center">
-                        <div className="w-32 h-3 mr-3 bg-gray-200 rounded-full dark:bg-gray-700">
-                          <div 
-                            className="h-3 transition-all rounded-full bg-gradient-to-r from-green-500 to-emerald-500"
-                            style={{ width: data.occupancy }}
-                          ></div>
-                        </div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{data.occupancy}</span>
-                      </div>
+                {popularRoutes.map((route, index) => (
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                      {route.route}
                     </td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center">
-                        <span className="mr-3 font-bold text-gray-800 dark:text-white">{data.rating}</span>
-                        <div className="flex text-yellow-500">
-                          {'★'.repeat(Math.floor(parseFloat(data.rating)))}
-                          {'☆'.repeat(5 - Math.floor(parseFloat(data.rating)))}
-                        </div>
-                      </div>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                      {route.bookings}
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-green-600 dark:text-green-400">
+                      {formatPrice(route.revenue)}
                     </td>
                   </tr>
                 ))}
@@ -150,7 +324,7 @@ const AdminAnalytics = () => {
             </table>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

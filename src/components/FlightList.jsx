@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import FlightCard from './FlightCard';
 import { flightsData, searchFlights } from '../data/mockData';
+import { FaPlane } from 'react-icons/fa';
 
-const FlightList = () => {
+const FlightList = ({ flights: propFlights }) => {
   const [flights, setFlights] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchFilters, setSearchFilters] = useState({});
 
   useEffect(() => {
-    // Load initial flights
-    setFlights(flightsData.slice(0, 3)); // Show only first 3 for dashboard
+    // Load initial flights - use propFlights if provided, otherwise use flightsData
+    if (propFlights && propFlights.length > 0) {
+      setFlights(propFlights);
+    } else {
+      setFlights(flightsData.slice(0, 3)); // Show only first 3 for dashboard
+    }
 
     // Listen for search events
     const handleSearch = (event) => {
@@ -23,7 +28,7 @@ const FlightList = () => {
     return () => {
       window.removeEventListener('flightSearch', handleSearch);
     };
-  }, []);
+  }, [propFlights]);
 
   const handleSearchInternal = (filters) => {
     setIsSearching(true);
@@ -69,7 +74,7 @@ const FlightList = () => {
   if (displayFlights.length === 0) {
     return (
       <div className="py-12 text-center">
-        <div className="mb-4 text-6xl text-gray-400 dark:text-gray-500">✈️</div>
+        <FaPlane size={64} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
         <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">Tidak ada penerbangan ditemukan</h3>
         <p className="text-gray-500 dark:text-gray-400">Coba ubah kriteria pencarian Anda</p>
       </div>

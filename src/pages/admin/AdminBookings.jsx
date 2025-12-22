@@ -19,7 +19,7 @@
 
 //     // Apply status filter
 //     if (filterStatus !== 'all') {
-//       filtered = filtered.filter(booking => 
+//       filtered = filtered.filter(booking =>
 //         booking.status.toLowerCase() === filterStatus ||
 //         booking.paymentStatus.toLowerCase() === filterStatus
 //       );
@@ -27,7 +27,7 @@
 
 //     // Apply search filter
 //     if (searchTerm) {
-//       filtered = filtered.filter(booking => 
+//       filtered = filtered.filter(booking =>
 //         booking.bookingCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
 //         booking.passengerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
 //         booking.flightNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,13 +55,13 @@
 //   }, [bookings, filterStatus, searchTerm, sortBy]);
 
 //   const handleStatusChange = (bookingId, newStatus) => {
-//     setBookings(prev => prev.map(booking => 
+//     setBookings(prev => prev.map(booking =>
 //       booking.id === bookingId ? { ...booking, status: newStatus } : booking
 //     ));
 //   };
 
 //   const handlePaymentStatusChange = (bookingId, newStatus) => {
-//     setBookings(prev => prev.map(booking => 
+//     setBookings(prev => prev.map(booking =>
 //       booking.id === bookingId ? { ...booking, paymentStatus: newStatus } : booking
 //     ));
 //   };
@@ -92,11 +92,11 @@
 
 //   return (
 //     <div>
-//       <Header 
-//         title="Kelola Pemesanan" 
-//         subtitle="Kelola dan pantau semua pemesanan tiket pesawat" 
+//       <Header
+//         title="Kelola Pemesanan"
+//         subtitle="Kelola dan pantau semua pemesanan tiket pesawat"
 //       />
-      
+
 //       <main className="p-6">
 //         {/* Stats Cards */}
 //         <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 lg:grid-cols-5">
@@ -306,58 +306,88 @@
 
 // export default Bookings;
 
-import React, { useState, useEffect } from 'react';
-import Header from '../../components/Header';
-import { bookingsData, formatPrice, formatDate, getStatusBadge } from '../../data/mockData';
-import { 
-  AiOutlineFileText, AiOutlineUser, AiOutlineCalendar, AiOutlinePhone, AiOutlineMail,
-  AiOutlineDollarCircle, AiOutlineTeam, AiOutlineCheckCircle, AiOutlineClockCircle,
-  AiOutlineCloseCircle, AiOutlineCreditCard, AiOutlineSearch, AiOutlineFilter,
-  AiOutlineSortAscending, AiOutlineReload, AiOutlineDownload, AiOutlineEye, AiOutlineDelete
-} from 'react-icons/ai';
-import { FaPlane, FaUserFriends } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import Header from "../../components/Header";
+import { useData } from "../../context/DataContext";
+import { formatPrice, formatDate, getStatusBadge } from "../../data/mockData";
+import BookingDetailModal from "../../components/BookingDetailModal";
+import ETicketModal from "../../components/ETicketModal";
+import ConfirmModal from "../../components/ConfirmModal";
+import {
+  AiOutlineFileText,
+  AiOutlineUser,
+  AiOutlineCalendar,
+  AiOutlinePhone,
+  AiOutlineMail,
+  AiOutlineDollarCircle,
+  AiOutlineTeam,
+  AiOutlineCheckCircle,
+  AiOutlineClockCircle,
+  AiOutlineCloseCircle,
+  AiOutlineCreditCard,
+  AiOutlineSearch,
+  AiOutlineFilter,
+  AiOutlineSortAscending,
+  AiOutlineReload,
+  AiOutlineDownload,
+  AiOutlineEye,
+  AiOutlineDelete,
+} from "react-icons/ai";
+import { FaPlane, FaUserFriends } from "react-icons/fa";
 
 const AdminBookings = () => {
-  const [bookings, setBookings] = useState([]);
+  const { bookings, updateBooking, deleteBooking } = useData();
   const [filteredBookings, setFilteredBookings] = useState([]);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('bookingDate');
-
-  useEffect(() => {
-    setBookings(bookingsData);
-    setFilteredBookings(bookingsData);
-  }, []);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("bookingDate");
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showETicketModal, setShowETicketModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({
+    isOpen: false,
+    bookingId: null,
+  });
 
   useEffect(() => {
     let filtered = [...bookings];
 
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(booking => 
-        booking.status.toLowerCase() === filterStatus ||
-        booking.paymentStatus.toLowerCase() === filterStatus
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(
+        (booking) =>
+          booking.status?.toLowerCase() === filterStatus ||
+          booking.paymentStatus?.toLowerCase() === filterStatus
       );
     }
 
     if (searchTerm) {
-      filtered = filtered.filter(booking => 
-        booking.bookingCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.passengerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.flightNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.route.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (booking) =>
+          booking.bookingCode
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          booking.passengerName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          booking.flightNumber
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          booking.route?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'bookingDate':
-          return new Date(b.bookingDate) - new Date(a.bookingDate);
-        case 'departureDate':
-          return new Date(a.departureDate) - new Date(b.departureDate);
-        case 'price':
-          return b.totalPrice - a.totalPrice;
-        case 'passenger':
-          return a.passengerName.localeCompare(b.passengerName);
+        case "bookingDate":
+          return new Date(b.bookingDate || 0) - new Date(a.bookingDate || 0);
+        case "departureDate":
+          return (
+            new Date(a.departureDate || 0) - new Date(b.departureDate || 0)
+          );
+        case "price":
+          return (b.totalPrice || 0) - (a.totalPrice || 0);
+        case "passenger":
+          return (a.passengerName || "").localeCompare(b.passengerName || "");
         default:
           return 0;
       }
@@ -367,71 +397,127 @@ const AdminBookings = () => {
   }, [bookings, filterStatus, searchTerm, sortBy]);
 
   const handleStatusChange = (bookingId, newStatus) => {
-    setBookings(prev => prev.map(booking => 
-      booking.id === bookingId ? { ...booking, status: newStatus } : booking
-    ));
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (booking) {
+      // Update booking dengan status baru, mempertahankan semua data lainnya
+      const updatedBooking = {
+        ...booking,
+        status: newStatus,
+      };
+      updateBooking(bookingId, updatedBooking);
+    }
   };
 
-  const handlePaymentStatusChange = (bookingId, newStatus) => {
-    setBookings(prev => prev.map(booking => 
-      booking.id === bookingId ? { ...booking, paymentStatus: newStatus } : booking
-    ));
+  const handleDeleteBooking = (bookingId) => {
+    setConfirmDelete({ isOpen: true, bookingId });
   };
 
-  const deleteBooking = (bookingId) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus booking ini?')) {
-      setBookings(prev => prev.filter(booking => booking.id !== bookingId));
+  const confirmDeleteBooking = () => {
+    if (confirmDelete.bookingId) {
+      deleteBooking(confirmDelete.bookingId);
+      setConfirmDelete({ isOpen: false, bookingId: null });
     }
   };
 
   const clearFilters = () => {
-    setFilterStatus('all');
-    setSearchTerm('');
-    setSortBy('bookingDate');
+    setFilterStatus("all");
+    setSearchTerm("");
+    setSortBy("bookingDate");
   };
 
   // Export to CSV
   const exportToCSV = () => {
-    const headers = ['Kode Booking','Nama Penumpang','Email','Telepon','Penumpang','Flight','Maskapai','Rute','Tanggal Berangkat','Jam','Kelas','Status Booking','Status Pembayaran','Total Harga','Tanggal Booking'];
-    const rows = filteredBookings.map(b => [
-      b.bookingCode, b.passengerName, b.email, b.phone, b.passengers,
-      b.flightNumber, b.airline, b.route, b.departureDate, b.departureTime,
-      b.class, b.status, b.paymentStatus, b.totalPrice, b.bookingDate
+    const headers = [
+      "Kode Booking",
+      "Nama Penumpang",
+      "Email",
+      "Telepon",
+      "Penumpang",
+      "Flight",
+      "Maskapai",
+      "Rute",
+      "Tanggal Berangkat",
+      "Jam",
+      "Kelas",
+      "Status Booking",
+      "Status Pembayaran",
+      "Total Harga",
+      "Tanggal Booking",
+    ];
+    const rows = filteredBookings.map((b) => [
+      b.bookingCode,
+      b.passengerName,
+      b.email,
+      b.phone,
+      Array.isArray(b.passengers) ? b.passengers.length : b.passengers || 0,
+      b.flightNumber,
+      b.airline,
+      b.route,
+      b.departureDate,
+      b.departureTime,
+      b.class,
+      b.status,
+      b.paymentStatus,
+      b.totalPrice,
+      b.bookingDate,
     ]);
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `pemesanan_${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `pemesanan_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   };
 
   const totalRevenue = filteredBookings
-    .filter(b => b.paymentStatus === 'Paid')
+    .filter((b) => b.paymentStatus === "Paid")
     .reduce((sum, b) => sum + b.totalPrice, 0);
 
   const stats = {
     total: filteredBookings.length,
-    confirmed: filteredBookings.filter(b => b.status === 'Confirmed').length,
-    pending: filteredBookings.filter(b => b.status === 'Pending').length,
-    paid: filteredBookings.filter(b => b.paymentStatus === 'Paid').length,
-    revenue: totalRevenue
+    confirmed: filteredBookings.filter((b) => b.status === "Confirmed").length,
+    pending: filteredBookings.filter((b) => b.status === "Pending").length,
+    paid: filteredBookings.filter((b) => b.paymentStatus === "Paid").length,
+    revenue: totalRevenue,
+  };
+
+  const handleHeaderSearch = (value) => {
+    setSearchTerm(value);
   };
 
   return (
     <div className="min-h-screen transition-colors bg-gray-50 dark:bg-gray-900">
-      <Header title="Kelola Pemesanan" subtitle="Kelola dan pantau semua pemesanan tiket pesawat" />
-      
-      <main className="p-4 md:p-6">
+      <Header
+        title="Kelola Pemesanan"
+        subtitle="Kelola dan pantau semua pemesanan tiket pesawat"
+        onSearch={handleHeaderSearch}
+        searchPlaceholder="Cari kode booking, nama, atau nomor penerbangan..."
+      />
+
+      <div className="p-4 md:p-6">
+        {/* Search Indicator */}
+        {searchTerm && (
+          <div className="mb-4 p-3 text-sm bg-gray-100 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            Menampilkan hasil untuk:{" "}
+            <strong className="text-gray-900 dark:text-white">
+              "{searchTerm}"
+            </strong>
+          </div>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-5">
           <div className="p-5 bg-white border-l-4 border-blue-500 shadow-sm dark:bg-gray-800 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xl font-bold text-gray-800 dark:text-white">{stats.total}</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Total Pemesanan</div>
+                <div className="text-xl font-bold text-gray-800 dark:text-white">
+                  {stats.total}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Total Pemesanan
+                </div>
               </div>
               <AiOutlineFileText size={24} className="text-blue-500" />
             </div>
@@ -439,8 +525,12 @@ const AdminBookings = () => {
           <div className="p-5 bg-white border-l-4 border-green-500 shadow-sm dark:bg-gray-800 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xl font-bold text-gray-800 dark:text-white">{stats.confirmed}</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Confirmed</div>
+                <div className="text-xl font-bold text-gray-800 dark:text-white">
+                  {stats.confirmed}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Confirmed
+                </div>
               </div>
               <AiOutlineCheckCircle size={24} className="text-green-500" />
             </div>
@@ -448,8 +538,12 @@ const AdminBookings = () => {
           <div className="p-5 bg-white border-l-4 border-yellow-500 shadow-sm dark:bg-gray-800 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xl font-bold text-gray-800 dark:text-white">{stats.pending}</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Pending</div>
+                <div className="text-xl font-bold text-gray-800 dark:text-white">
+                  {stats.pending}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Pending
+                </div>
               </div>
               <AiOutlineClockCircle size={24} className="text-yellow-500" />
             </div>
@@ -457,8 +551,12 @@ const AdminBookings = () => {
           <div className="p-5 bg-white border-l-4 border-purple-500 shadow-sm dark:bg-gray-800 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xl font-bold text-gray-800 dark:text-white">{stats.paid}</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Paid</div>
+                <div className="text-xl font-bold text-gray-800 dark:text-white">
+                  {stats.paid}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Paid
+                </div>
               </div>
               <AiOutlineCreditCard size={24} className="text-purple-500" />
             </div>
@@ -466,8 +564,12 @@ const AdminBookings = () => {
           <div className="p-5 bg-white border-l-4 border-indigo-500 shadow-sm dark:bg-gray-800 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-base font-bold text-gray-800 dark:text-white">{formatPrice(stats.revenue)}</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">Total Revenue</div>
+                <div className="text-base font-bold text-gray-800 dark:text-white">
+                  {formatPrice(stats.revenue)}
+                </div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Total Revenue
+                </div>
               </div>
               <AiOutlineDollarCircle size={24} className="text-indigo-500" />
             </div>
@@ -478,24 +580,31 @@ const AdminBookings = () => {
         <div className="p-6 mb-6 bg-white shadow-sm dark:bg-gray-800 rounded-xl">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Cari Pemesanan</label>
+              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Cari Pemesanan
+              </label>
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Kode booking, nama, nomor flight..."
                   value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
-                <AiOutlineSearch className="absolute text-gray-400 left-3 top-3 dark:text-gray-500" size={18} />
+                <AiOutlineSearch
+                  className="absolute text-gray-400 left-3 top-3 dark:text-gray-500"
+                  size={18}
+                />
               </div>
             </div>
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Filter Status</label>
+              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Filter Status
+              </label>
               <div className="relative">
                 <select
                   value={filterStatus}
-                  onChange={e => setFilterStatus(e.target.value)}
+                  onChange={(e) => setFilterStatus(e.target.value)}
                   className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
                 >
                   <option value="all">Semua Status</option>
@@ -505,15 +614,20 @@ const AdminBookings = () => {
                   <option value="unpaid">Unpaid</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
-                <AiOutlineFilter className="absolute text-gray-400 left-3 top-3 dark:text-gray-500" size={18} />
+                <AiOutlineFilter
+                  className="absolute text-gray-400 left-3 top-3 dark:text-gray-500"
+                  size={18}
+                />
               </div>
             </div>
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Urutkan Berdasarkan</label>
+              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Urutkan Berdasarkan
+              </label>
               <div className="relative">
                 <select
                   value={sortBy}
-                  onChange={e => setSortBy(e.target.value)}
+                  onChange={(e) => setSortBy(e.target.value)}
                   className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
                 >
                   <option value="bookingDate">Tanggal Booking (Terbaru)</option>
@@ -521,21 +635,38 @@ const AdminBookings = () => {
                   <option value="price">Harga (Tertinggi)</option>
                   <option value="passenger">Nama Penumpang (A-Z)</option>
                 </select>
-                <AiOutlineSortAscending className="absolute text-gray-400 left-3 top-3 dark:text-gray-500" size={18} />
+                <AiOutlineSortAscending
+                  className="absolute text-gray-400 left-3 top-3 dark:text-gray-500"
+                  size={18}
+                />
               </div>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Menampilkan <span className="font-semibold text-gray-800 dark:text-white">{filteredBookings.length}</span> dari <span className="font-semibold text-gray-800 dark:text-white">{bookings.length}</span> pemesanan
+              Menampilkan{" "}
+              <span className="font-semibold text-gray-800 dark:text-white">
+                {filteredBookings.length}
+              </span>{" "}
+              dari{" "}
+              <span className="font-semibold text-gray-800 dark:text-white">
+                {bookings.length}
+              </span>{" "}
+              pemesanan
             </div>
             <div className="flex gap-3">
-              <button onClick={clearFilters} className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+              >
                 <AiOutlineReload size={16} />
                 Reset Filter
               </button>
-              <button onClick={exportToCSV} className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+              <button
+                onClick={exportToCSV}
+                className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              >
                 <AiOutlineDownload size={16} />
                 Export Data
               </button>
@@ -561,41 +692,65 @@ const AdminBookings = () => {
                 <thead className="border-b border-gray-200 bg-gray-50 dark:bg-gray-900/50 dark:border-gray-700">
                   <tr>
                     <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
-                      <div className="flex items-center gap-2"><AiOutlineFileText size={16} /> Booking Info</div>
+                      <div className="flex items-center gap-2">
+                        <AiOutlineFileText size={16} /> Booking Info
+                      </div>
                     </th>
                     <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
-                      <div className="flex items-center gap-2"><AiOutlineUser size={16} /> Penumpang</div>
+                      <div className="flex items-center gap-2">
+                        <AiOutlineUser size={16} /> Penumpang
+                      </div>
                     </th>
                     <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
-                      <div className="flex items-center gap-2"><FaPlane size={16} /> Penerbangan</div>
+                      <div className="flex items-center gap-2">
+                        <FaPlane size={16} /> Penerbangan
+                      </div>
                     </th>
                     <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
-                      <div className="flex items-center gap-2"><AiOutlineCheckCircle size={16} /> Status</div>
+                      <div className="flex items-center gap-2">
+                        <AiOutlineCheckCircle size={16} /> Status
+                      </div>
                     </th>
                     <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
-                      <div className="flex items-center gap-2"><AiOutlineDollarCircle size={16} /> Total</div>
+                      <div className="flex items-center gap-2">
+                        <AiOutlineDollarCircle size={16} /> Total
+                      </div>
                     </th>
                     <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
-                      <div className="flex items-center gap-2"><AiOutlineCalendar size={16} /> Actions</div>
+                      <div className="flex items-center gap-2">
+                        <AiOutlineCalendar size={16} /> Actions
+                      </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredBookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <tr
+                      key={booking.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    >
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-gray-900 dark:text-white">{booking.bookingCode}</div>
-                        <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <AiOutlineCalendar size={12} /> {formatDate(booking.bookingDate)}
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {booking.bookingCode}
                         </div>
-                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">ID: {booking.id}</div>
+                        <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          <AiOutlineCalendar size={12} />{" "}
+                          {formatDate(booking.bookingDate)}
+                        </div>
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          ID: {booking.id}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1 text-sm font-semibold text-gray-900 dark:text-white">
                           <AiOutlineUser size={14} /> {booking.passengerName}
                         </div>
                         <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <FaUserFriends size={12} /> {booking.passengers} Penumpang
+                          <FaUserFriends size={12} />{" "}
+                          {Array.isArray(booking.passengers)
+                            ? booking.passengers.length
+                            : booking.passengers || 0}{" "}
+                          Penumpang
                         </div>
                         <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
                           <AiOutlineMail size={12} /> {booking.email}
@@ -605,11 +760,18 @@ const AdminBookings = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-gray-900 dark:text-white">{booking.flightNumber}</div>
-                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{booking.airline}</div>
-                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{booking.route}</div>
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {booking.flightNumber}
+                        </div>
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {booking.airline}
+                        </div>
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {booking.route}
+                        </div>
                         <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <AiOutlineCalendar size={12} /> {booking.departureDate} {booking.departureTime}
+                          <AiOutlineCalendar size={12} />{" "}
+                          {booking.departureDate} {booking.departureTime}
                         </div>
                         <div className="inline-block px-2 py-1 mt-1 text-xs text-gray-700 bg-gray-100 rounded dark:bg-gray-700 dark:text-gray-300">
                           {booking.class}
@@ -617,15 +779,23 @@ const AdminBookings = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="space-y-2">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-full ${getStatusBadge(booking.status)}`}>
-                            {booking.status === 'Confirmed' ? <AiOutlineCheckCircle size={12} /> : 
-                             booking.status === 'Pending' ? <AiOutlineClockCircle size={12} /> : 
-                             <AiOutlineCloseCircle size={12} />}
+                          <span
+                            className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-full ${getStatusBadge(
+                              booking.status
+                            )}`}
+                          >
+                            {booking.status === "Confirmed" ? (
+                              <AiOutlineCheckCircle size={12} />
+                            ) : booking.status === "Pending" ? (
+                              <AiOutlineClockCircle size={12} />
+                            ) : (
+                              <AiOutlineCloseCircle size={12} />
+                            )}
                             {booking.status}
                           </span>
-                          <span className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-full ${getStatusBadge(booking.paymentStatus)}`}>
-                            {booking.paymentStatus === 'Paid' ? <AiOutlineCheckCircle size={12} /> : <AiOutlineCreditCard size={12} />}
-                            {booking.paymentStatus}
+                          <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                            <AiOutlineCheckCircle size={12} />
+                            Paid
                           </span>
                         </div>
                       </td>
@@ -634,7 +804,11 @@ const AdminBookings = () => {
                           {formatPrice(booking.totalPrice)}
                         </div>
                         <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <AiOutlineTeam size={12} /> {booking.passengers} tiket
+                          <AiOutlineTeam size={12} />{" "}
+                          {Array.isArray(booking.passengers)
+                            ? booking.passengers.length
+                            : booking.passengers || 0}{" "}
+                          tiket
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -642,29 +816,37 @@ const AdminBookings = () => {
                           <div className="flex gap-2">
                             <select
                               value={booking.status}
-                              onChange={(e) => handleStatusChange(booking.id, e.target.value)}
+                              onChange={(e) =>
+                                handleStatusChange(booking.id, e.target.value)
+                              }
                               className="flex-1 px-3 py-2 text-xs bg-white border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
                             >
                               <option>Confirmed</option>
                               <option>Pending</option>
                               <option>Cancelled</option>
                             </select>
-                            <select
-                              value={booking.paymentStatus}
-                              onChange={(e) => handlePaymentStatusChange(booking.id, e.target.value)}
-                              className="flex-1 px-3 py-2 text-xs bg-white border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option>Paid</option>
-                              <option>Pending</option>
-                              <option>Failed</option>
-                            </select>
                           </div>
                           <div className="flex gap-2">
-                            <button className="flex items-center justify-center flex-1 gap-1 px-3 py-2 text-xs text-white bg-blue-600 rounded hover:bg-blue-700">
+                            <button
+                              onClick={() => {
+                                setSelectedBooking(booking);
+                                setShowDetailModal(true);
+                              }}
+                              className="flex items-center justify-center flex-1 gap-1 px-3 py-2 text-xs text-white bg-blue-600 rounded hover:bg-blue-700"
+                            >
                               <AiOutlineEye size={12} /> Detail
                             </button>
                             <button
-                              onClick={() => deleteBooking(booking.id)}
+                              onClick={() => {
+                                setSelectedBooking(booking);
+                                setShowETicketModal(true);
+                              }}
+                              className="flex items-center justify-center flex-1 gap-1 px-3 py-2 text-xs text-white bg-green-600 rounded hover:bg-green-700"
+                            >
+                              <AiOutlineDownload size={12} /> E-Ticket
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBooking(booking.id)}
                               className="flex items-center justify-center flex-1 gap-1 px-3 py-2 text-xs text-white bg-red-600 rounded hover:bg-red-700"
                             >
                               <AiOutlineDelete size={12} /> Hapus
@@ -679,15 +861,22 @@ const AdminBookings = () => {
             </div>
           ) : (
             <div className="px-4 py-16 text-center">
-              <AiOutlineFileText size={80} className="mx-auto mb-6 text-gray-300 dark:text-gray-600" />
+              <AiOutlineFileText
+                size={80}
+                className="mx-auto mb-6 text-gray-300 dark:text-gray-600"
+              />
               <h3 className="mb-3 text-2xl font-semibold text-gray-900 dark:text-white">
                 Tidak ada pemesanan ditemukan
               </h3>
               <p className="max-w-md mx-auto mb-8 text-lg text-gray-500 dark:text-gray-400">
-                Coba ubah filter atau kata kunci pencarian Anda untuk menemukan pemesanan yang dicari
+                Coba ubah filter atau kata kunci pencarian Anda untuk menemukan
+                pemesanan yang dicari
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <button onClick={clearFilters} className="flex items-center justify-center gap-2 px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center justify-center gap-2 px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
                   <AiOutlineReload size={16} /> Tampilkan Semua Pemesanan
                 </button>
               </div>
@@ -714,7 +903,37 @@ const AdminBookings = () => {
             </div>
           </div>
         )}
-      </main>
+      </div>
+
+      {/* Modals */}
+      <BookingDetailModal
+        booking={selectedBooking}
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedBooking(null);
+        }}
+      />
+      <ETicketModal
+        booking={selectedBooking}
+        isOpen={showETicketModal}
+        onClose={() => {
+          setShowETicketModal(false);
+          setSelectedBooking(null);
+        }}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, bookingId: null })}
+        onConfirm={confirmDeleteBooking}
+        type="danger"
+        title="Hapus Pemesanan"
+        message="Apakah Anda yakin ingin menghapus pemesanan ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+      />
     </div>
   );
 };

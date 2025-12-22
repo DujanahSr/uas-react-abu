@@ -50,20 +50,36 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved !== null) {
-      return JSON.parse(saved);
+    try {
+      if (typeof window === 'undefined') return false;
+      
+      const saved = localStorage.getItem('theme');
+      if (saved !== null) {
+        return JSON.parse(saved);
+      }
+      // Default ke sistem user kalau tidak ada preferensi
+      if (window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error loading theme:', error);
+      return false;
     }
-    // Default ke sistem user kalau tidak ada preferensi
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {
-    localStorage.setItem('theme', JSON.stringify(isDark));
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('theme', JSON.stringify(isDark));
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving theme:', error);
     }
   }, [isDark]);
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import BookingForm from '../../components/BookingForm';
 import { useNavigate } from 'react-router-dom';
+import { FaPlane, FaMapMarkerAlt } from 'react-icons/fa';
+import { AiOutlineArrowRight } from 'react-icons/ai';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -46,15 +48,27 @@ const Home = () => {
             ].map((route, i) => (
               <div key={i} className="overflow-hidden transition-all bg-white shadow-lg dark:bg-gray-800 rounded-2xl hover:shadow-2xl">
                 <div className="flex items-center justify-center h-48 bg-gradient-to-r from-blue-500 to-indigo-600">
-                  <span className="text-4xl">✈️</span>
+                  <FaPlane size={48} className="text-white" />
                 </div>
                 <div className="p-8 text-center">
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{route.from}</p>
-                  <p className="my-2 text-lg text-gray-600 dark:text-gray-400">→</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{route.to}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+                    <FaMapMarkerAlt size={20} />
+                    {route.from}
+                  </p>
+                  <p className="my-2 text-lg text-gray-600 dark:text-gray-400">
+                    <AiOutlineArrowRight className="inline" />
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+                    <FaMapMarkerAlt size={20} />
+                    {route.to}
+                  </p>
                   <p className="mt-6 text-3xl font-bold text-blue-600 dark:text-blue-400">{route.price}</p>
-                  <button className="px-8 py-4 mt-6 font-medium text-white transition-all bg-blue-600 rounded-xl hover:bg-blue-700">
+                  <button 
+                    onClick={() => navigate('/search')}
+                    className="px-8 py-4 mt-6 font-medium text-white transition-all bg-blue-600 rounded-xl hover:bg-blue-700 flex items-center gap-2 mx-auto"
+                  >
                     Cari Sekarang
+                    <AiOutlineArrowRight size={18} />
                   </button>
                 </div>
               </div>

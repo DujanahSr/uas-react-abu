@@ -1,12 +1,26 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AiOutlineBell, AiOutlineSearch, AiOutlineSun, AiOutlineMoon } from 'react-icons/ai';
 import { useTheme } from '../context/ThemeContext';
 
-
-
-const Header = ({ title, subtitle }) => {
+const Header = ({ title, subtitle, onSearch, searchPlaceholder = "Cari..." }) => {
   const { isDark, toggleTheme } = useTheme();
+  const [searchValue, setSearchValue] = useState('');
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchValue);
+    }
+  };
 
   return (
     <header className="w-full px-4 py-4 transition-colors bg-white border-b border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 md:px-6">
@@ -18,14 +32,18 @@ const Header = ({ title, subtitle }) => {
 
         <div className="flex items-center flex-shrink-0 mt-4 space-x-2 md:space-x-4 lg:mt-0">
           {/* Search Bar */}
-          <div className="relative hidden sm:block">
-            <AiOutlineSearch className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2 dark:text-gray-500" size={20} />
-            <input
-              type="text"
-              placeholder="Cari penerbangan..."
-              className="w-32 py-2 pl-10 pr-4 text-gray-800 transition-colors bg-white border border-gray-300 rounded-lg dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white md:w-48 lg:w-64"
-            />
-          </div>
+          {onSearch && (
+            <form onSubmit={handleSearchSubmit} className="relative hidden sm:block">
+              <AiOutlineSearch className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2 dark:text-gray-500" size={20} />
+              <input
+                type="text"
+                value={searchValue}
+                onChange={handleSearchChange}
+                placeholder={searchPlaceholder}
+                className="w-32 py-2 pl-10 pr-4 text-gray-800 transition-colors bg-white border border-gray-300 rounded-lg dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white md:w-48 lg:w-64"
+              />
+            </form>
+          )}
 
           {/* Theme Toggle */}
           <button
