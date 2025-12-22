@@ -1,5 +1,6 @@
 import React from 'react';
 import { AiOutlineClockCircle, AiOutlineCalendar, AiOutlineUser } from 'react-icons/ai';
+import { FaPlane } from 'react-icons/fa';
 import { formatPrice, getStatusBadge } from '../data/mockData';
 
 const FlightCard = ({ flight, onSelect }) => {
@@ -39,7 +40,9 @@ const FlightCard = ({ flight, onSelect }) => {
           <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">{flight.duration}</div>
           <div className="relative">
             <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
-            <div className="relative z-10 w-4 h-4 mx-auto bg-blue-600 rounded-full"></div>
+            <div className="relative z-10 flex items-center justify-center w-8 h-8 mx-auto bg-blue-600 rounded-full">
+              <FaPlane size={14} className="text-white" />
+            </div>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">{flight.class}</div>
         </div>
