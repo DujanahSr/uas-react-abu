@@ -691,7 +691,7 @@
 │  from localStorage   │
 └─────────────────────┘
   │
-  ▼
+  ▼ mantap
 ┌─────────────────────┐
 │  Display Tabs:      │
 │  - Password         │
