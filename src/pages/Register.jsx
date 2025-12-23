@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { FaPlane, FaUser, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
-import { AiOutlineMail, AiOutlineLock, AiOutlineUser } from "react-icons/ai";
+import { FaPlane, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import {
+  AiOutlineMail,
+  AiOutlineLock,
+  AiOutlineUser,
+  AiOutlineEye,
+  AiOutlineEyeInvisible,
+} from "react-icons/ai";
 import {
   validateEmail,
   validatePhone,
@@ -25,6 +31,8 @@ const Register = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const { registerUser, users } = useAuth();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -231,29 +239,41 @@ const Register = () => {
               />
               Password
             </label>
-            <div className="relative">
+            <div className="relative group">
+              <AiOutlineLock
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-transform duration-200 group-focus-within:scale-95 group-hover:scale-95"
+                size={18}
+              />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Minimal 6 karakter"
-                className={`w-full px-4 py-3 pl-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
+                className={`w-full px-4 py-3 pl-10 pr-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
                   fieldErrors.password
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
                 }`}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
+              >
+                {showPassword ? (
+                  <AiOutlineEyeInvisible size={18} />
+                ) : (
+                  <AiOutlineEye size={18} />
+                )}
+              </button>
               {fieldErrors.password && (
                 <p className="mt-1 text-xs text-red-600 dark:text-red-400">
                   {fieldErrors.password}
                 </p>
               )}
-              <AiOutlineLock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
             </div>
           </div>
 
@@ -265,29 +285,45 @@ const Register = () => {
               />
               Konfirmasi Password
             </label>
-            <div className="relative">
+            <div className="relative group">
+              <AiOutlineLock
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-transform duration-200 group-focus-within:scale-95 group-hover:scale-95"
+                size={18}
+              />
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Ulangi password"
-                className={`w-full px-4 py-3 pl-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
+                className={`w-full px-4 py-3 pl-10 pr-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
                   fieldErrors.confirmPassword
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
                 }`}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label={
+                  showConfirmPassword
+                    ? "Sembunyikan konfirmasi password"
+                    : "Lihat konfirmasi password"
+                }
+              >
+                {showConfirmPassword ? (
+                  <AiOutlineEyeInvisible size={18} />
+                ) : (
+                  <AiOutlineEye size={18} />
+                )}
+              </button>
               {fieldErrors.confirmPassword && (
                 <p className="mt-1 text-xs text-red-600 dark:text-red-400">
                   {fieldErrors.confirmPassword}
                 </p>
               )}
-              <AiOutlineLock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
             </div>
           </div>
 

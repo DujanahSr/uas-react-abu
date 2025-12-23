@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   AiOutlineClose,
   AiOutlineDownload,
@@ -10,34 +10,279 @@ import { FaPlane, FaMapMarkerAlt, FaQrcode } from "react-icons/fa";
 import { formatPrice, formatDate } from "../data/mockData";
 
 const ETicketModal = ({ booking, isOpen, onClose }) => {
+  const printContentRef = useRef(null);
+  const downloadLinkRef = useRef(null);
+
   if (!isOpen || !booking) return null;
 
   const handleDownload = () => {
-    // Generate printable content
-    const printContent = document.getElementById("e-ticket-content");
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
+    // Unduh E-Ticket sebagai file HTML (bisa dibuka/print / save as PDF di mana saja)
+    if (!printContentRef.current) return;
+
+    const passengerRows =
+      booking.passengers && Array.isArray(booking.passengers)
+        ? booking.passengers
+            .map(
+              (p, i) => `
+          <div class="row">
+            <span class="label">Penumpang ${i + 1}:</span>
+            <span class="value">${p.title} ${p.name}${
+                p.seat ? ` • Kursi ${p.seat}` : ""
+              }</span>
+          </div>
+        `
+            )
+            .join("")
+        : "";
+
+    const ticketHTML = `
+      <div class="ticket">
+        <div class="header">
+          <div class="header-left">
+            <div class="logo-circle">✈️</div>
+            <div>
+              <h1>E-Ticket</h1>
+              <p>${booking.airline} • ${booking.flightNumber}</p>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="label">Kode Booking</div>
+            <div class="code">${booking.bookingCode}</div>
+            <div class="status">CONFIRMED</div>
+          </div>
+        </div>
+
+        <div class="section section-grid">
+          <div>
+            <h2>Detail Penerbangan</h2>
+            <div class="row">
+              <span class="label">Dari</span>
+              <span class="value">${booking.from}</span>
+            </div>
+            <div class="row">
+              <span class="label">Ke</span>
+              <span class="value">${booking.to}</span>
+            </div>
+            <div class="row">
+              <span class="label">Tanggal</span>
+              <span class="value">${formatDate(booking.departureDate)}</span>
+            </div>
+            <div class="row">
+              <span class="label">Waktu</span>
+              <span class="value">${booking.departureTime} - ${
+      booking.arrivalTime
+    }</span>
+            </div>
+          </div>
+          <div>
+            <h2>Informasi Tambahan</h2>
+            <div class="row">
+              <span class="label">Kelas</span>
+              <span class="value">${booking.class}</span>
+            </div>
+            <div class="row">
+              <span class="label">Metode Pembayaran</span>
+              <span class="value">${
+                booking.paymentMethod || "Credit Card"
+              }</span>
+            </div>
+            <div class="row">
+              <span class="label">Tanggal Booking</span>
+              <span class="value">${formatDate(booking.bookingDate)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Penumpang</h2>
+          ${
+            passengerRows ||
+            `<p class="value">Data penumpang tidak tersedia</p>`
+          }
+        </div>
+
+        <div class="section section-grid">
+          <div>
+            <h2>Pembayaran</h2>
+            <div class="row">
+              <span class="label">Total</span>
+              <span class="value total">${formatPrice(
+                booking.totalPrice
+              )}</span>
+            </div>
+            <div class="row">
+              <span class="label">Status Pembayaran</span>
+              <span class="value">${booking.paymentStatus || "Paid"}</span>
+            </div>
+          </div>
+          <div class="qr-box">
+            <div class="qr-placeholder">QR CODE</div>
+            <p class="qr-text">Tunjukkan e-ticket ini saat check-in</p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>E-ticket ini diterbitkan oleh FlyBook. Simpan file ini dan tunjukkan saat proses check-in.</p>
+        </div>
+      </div>
+    `;
+
+    const fullHtml = `
+      <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="UTF-8" />
           <title>E-Ticket - ${booking.bookingCode}</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .ticket { border: 2px solid #2563eb; border-radius: 12px; padding: 20px; max-width: 800px; margin: 0 auto; }
-            .header { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-            .section { margin: 20px 0; padding: 15px; background: #f9fafb; border-radius: 8px; }
-            .row { display: flex; justify-content: space-between; margin: 10px 0; }
-            .label { font-weight: bold; color: #6b7280; }
-            .value { color: #111827; }
-            @media print { .no-print { display: none; } }
+            * { box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; padding: 16px; background: #e5e7eb; }
+            .ticket {
+              border-radius: 16px;
+              padding: 24px;
+              max-width: 900px;
+              margin: 0 auto;
+              background: #ffffff;
+              box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 16px;
+              padding: 16px 20px;
+              border-radius: 12px;
+              background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+              color: white;
+              margin-bottom: 20px;
+            }
+            .header-left { display: flex; align-items: center; gap: 12px; }
+            .logo-circle {
+              width: 40px;
+              height: 40px;
+              border-radius: 999px;
+              background: rgba(255,255,255,0.15);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 20px;
+            }
+            .header-left h1 { margin: 0; font-size: 22px; }
+            .header-left p { margin: 2px 0 0; font-size: 13px; opacity: 0.9; }
+            .header-right { text-align: right; }
+            .header-right .label { font-size: 11px; opacity: 0.85; }
+            .header-right .code { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+            .header-right .status {
+              display: inline-block;
+              margin-top: 4px;
+              padding: 4px 10px;
+              border-radius: 999px;
+              background: rgba(22, 163, 74, 0.2);
+              color: #bbf7d0;
+              font-size: 11px;
+              font-weight: 600;
+            }
+            .section {
+              margin: 18px 0;
+              padding: 16px 18px;
+              border-radius: 12px;
+              background: #f9fafb;
+              border: 1px solid #e5e7eb;
+            }
+            .section h2 {
+              margin: 0 0 10px;
+              font-size: 15px;
+              color: #111827;
+            }
+            .row {
+              display: flex;
+              justify-content: space-between;
+              gap: 12px;
+              margin: 6px 0;
+              font-size: 13px;
+            }
+            .row .label {
+              font-weight: 600;
+              color: #6b7280;
+              min-width: 120px;
+            }
+            .row .value {
+              color: #111827;
+              text-align: right;
+              flex: 1;
+            }
+            .row .value.total {
+              font-size: 18px;
+              font-weight: 700;
+              color: #16a34a;
+            }
+            .section-grid {
+              display: grid;
+              grid-template-columns: 1.5fr 1.2fr;
+              gap: 16px;
+            }
+            .qr-box {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+            }
+            .qr-placeholder {
+              width: 110px;
+              height: 110px;
+              border-radius: 12px;
+              border: 2px dashed #9ca3af;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 11px;
+              color: #6b7280;
+            }
+            .qr-text {
+              margin: 0;
+              font-size: 11px;
+              color: #6b7280;
+              text-align: center;
+            }
+            .footer {
+              margin-top: 16px;
+              font-size: 11px;
+              color: #6b7280;
+              text-align: center;
+            }
+            @media (max-width: 640px) {
+              body { padding: 8px; }
+              .ticket { padding: 16px; }
+              .header { flex-direction: column; align-items: flex-start; }
+              .header-right { text-align: left; }
+              .section-grid { grid-template-columns: 1fr; }
+              .row { flex-direction: column; align-items: flex-start; }
+              .row .value { text-align: left; }
+            }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          ${ticketHTML}
         </body>
       </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+    `;
+
+    const blob = new Blob([fullHtml], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+
+    if (downloadLinkRef.current) {
+      downloadLinkRef.current.href = url;
+      downloadLinkRef.current.download = `e-ticket-${booking.bookingCode}.html`;
+      downloadLinkRef.current.click();
+
+      // Cleanup URL setelah sedikit delay
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
+    } else {
+      console.error("Download link ref not available");
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (
@@ -76,7 +321,11 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
         </div>
 
         {/* E-Ticket Content */}
-        <div id="e-ticket-content" className="p-6 space-y-6">
+        <div
+          ref={printContentRef}
+          id="e-ticket-content"
+          className="p-6 space-y-6"
+        >
           {/* Ticket Header */}
           <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl">
             <div className="flex items-center justify-between">
@@ -109,19 +358,28 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="p-4 bg-white dark:bg-gray-800 rounded-lg mb-2">
-                  <FaMapMarkerAlt className="mx-auto text-green-600 mb-2" size={32} />
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Dari</p>
+                  <FaMapMarkerAlt
+                    className="mx-auto text-green-600 mb-2"
+                    size={32}
+                  />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Dari
+                  </p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white mt-1">
                     {booking.from}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <AiOutlineCalendar size={16} />
-                  <span className="text-sm">{formatDate(booking.departureDate)}</span>
+                  <span className="text-sm">
+                    {formatDate(booking.departureDate)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 mt-1">
                   <AiOutlineClockCircle size={16} />
-                  <span className="text-sm font-semibold">{booking.departureTime}</span>
+                  <span className="text-sm font-semibold">
+                    {booking.departureTime}
+                  </span>
                 </div>
               </div>
 
@@ -138,7 +396,10 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
 
               <div className="text-center">
                 <div className="p-4 bg-white dark:bg-gray-800 rounded-lg mb-2">
-                  <FaMapMarkerAlt className="mx-auto text-red-600 mb-2" size={32} />
+                  <FaMapMarkerAlt
+                    className="mx-auto text-red-600 mb-2"
+                    size={32}
+                  />
                   <p className="text-sm text-gray-600 dark:text-gray-400">Ke</p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white mt-1">
                     {booking.to}
@@ -146,11 +407,15 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
                 </div>
                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <AiOutlineCalendar size={16} />
-                  <span className="text-sm">{formatDate(booking.departureDate)}</span>
+                  <span className="text-sm">
+                    {formatDate(booking.departureDate)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 mt-1">
                   <AiOutlineClockCircle size={16} />
-                  <span className="text-sm font-semibold">{booking.arrivalTime}</span>
+                  <span className="text-sm font-semibold">
+                    {booking.arrivalTime}
+                  </span>
                 </div>
               </div>
             </div>
@@ -158,12 +423,20 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
             <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Maskapai</p>
-                  <p className="font-bold text-gray-900 dark:text-white">{booking.airline}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Maskapai
+                  </p>
+                  <p className="font-bold text-gray-900 dark:text-white">
+                    {booking.airline}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Nomor Penerbangan</p>
-                  <p className="font-bold text-gray-900 dark:text-white">{booking.flightNumber}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Nomor Penerbangan
+                  </p>
+                  <p className="font-bold text-gray-900 dark:text-white">
+                    {booking.flightNumber}
+                  </p>
                 </div>
               </div>
             </div>
@@ -212,19 +485,25 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
               </h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Total Harga</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Total Harga
+                  </span>
                   <span className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {formatPrice(booking.totalPrice)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Status</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Status
+                  </span>
                   <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full font-semibold">
                     Paid
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Metode</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Metode
+                  </span>
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {booking.paymentMethod || "Credit Card"}
                   </span>
@@ -238,13 +517,17 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
               </h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Tanggal Booking</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Tanggal Booking
+                  </span>
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {formatDate(booking.bookingDate)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Booking ID</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Booking ID
+                  </span>
                   <span className="font-mono text-sm text-gray-900 dark:text-white">
                     {booking.id}
                   </span>
@@ -275,7 +558,7 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
               className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors flex items-center justify-center gap-2"
             >
               <AiOutlineDownload size={20} />
-              Download / Print
+              Download
             </button>
             <button
               onClick={onClose}
@@ -285,10 +568,16 @@ const ETicketModal = ({ booking, isOpen, onClose }) => {
             </button>
           </div>
         </div>
+
+        {/* Hidden link untuk proses download tanpa DOM methods langsung */}
+        <a
+          ref={downloadLinkRef}
+          style={{ display: "none" }}
+          aria-hidden="true"
+        />
       </div>
     </div>
   );
 };
 
 export default ETicketModal;
-

@@ -1055,18 +1055,14 @@ export const searchFlights = (filters, flightsArray = null) => {
     });
   }
   
-  if (filters.class) {
-    const classMap = {
-      'economy': 'Ekonomi',
-      'business': 'Bisnis',
-      'first': 'First'
-    };
-    const classFilter = classMap[filters.class.toLowerCase()] || filters.class;
-    filtered = filtered.filter(flight => 
-      flight.class.toLowerCase() === classFilter.toLowerCase()
-    );
-  }
-  
+  // NOTE:
+  // Saat ini data flight tidak menyimpan properti "class" (Ekonomi/Bisnis/First) secara langsung.
+  // User memilih kelas saat di halaman detail penerbangan, bukan di level pencarian.
+  // Untuk mencegah error dan hasil kosong, filter berdasarkan class diabaikan dulu di sini.
+  // Jika nanti flight punya field class, bagian ini bisa diaktifkan kembali dengan aman.
+  //
+  // if (filters.class) { ... }
+
   if (filters.passengers) {
     filtered = filtered.filter(flight => flight.availableSeats >= parseInt(filters.passengers));
   }

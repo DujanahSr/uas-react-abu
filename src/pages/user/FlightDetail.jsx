@@ -469,34 +469,56 @@ const FlightDetail = () => {
                                 ? "bg-purple-50 dark:bg-purple-900/20"
                                 : "bg-white dark:bg-gray-700",
                           },
-                        ].map((cls) => (
-                          <button
-                            key={cls.value}
-                            type="button"
-                            onClick={() => setSelectedClass(cls.value)}
-                            className={`p-5 border-2 rounded-xl transition-all text-left hover:shadow-md ${cls.borderColor} ${cls.bgColor}`}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span
-                                className={`px-2 py-1 text-xs font-semibold rounded ${cls.badgeColor}`}
-                              >
-                                {cls.label}
-                              </span>
-                              {selectedClass === cls.value && (
-                                <AiOutlineCheckCircle
-                                  className="text-green-600 dark:text-green-400"
-                                  size={20}
-                                />
-                              )}
-                            </div>
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                              {formatPrice(cls.price)}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {cls.description}
-                            </div>
-                          </button>
-                        ))}
+                        ].map((cls) => {
+                          const formatted = formatPrice(cls.price);
+                          const currency = formatted.slice(0, 3);
+                          const amount = formatted.slice(3);
+
+                          // Ukuran tetap: Rp kecil, angka sedikit lebih besar, tetap muat satu baris
+                          const currencySizeClass =
+                            "text-[10px] sm:text-xs md:text-sm";
+                          const amountSizeClass =
+                            "text-sm sm:text-lg md:text-xl";
+
+                          return (
+                            <button
+                              key={cls.value}
+                              type="button"
+                              onClick={() => setSelectedClass(cls.value)}
+                              className={`p-5 border-2 rounded-xl transition-all text-left hover:shadow-md ${cls.borderColor} ${cls.bgColor}`}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span
+                                  className={`px-2 py-1 text-xs font-semibold rounded ${cls.badgeColor}`}
+                                >
+                                  {cls.label}
+                                </span>
+                                {selectedClass === cls.value && (
+                                  <AiOutlineCheckCircle
+                                    className="text-green-600 dark:text-green-400"
+                                    size={20}
+                                  />
+                                )}
+                              </div>
+                              {/* Harga: Rp kecil, angka sedikit lebih besar, 1 baris */}
+                              <div className="flex items-baseline gap-1 mb-1 text-gray-900 dark:text-white whitespace-nowrap">
+                                <span
+                                  className={`font-semibold opacity-80 ${currencySizeClass}`}
+                                >
+                                  {currency}
+                                </span>
+                                <span
+                                  className={`font-bold leading-tight tracking-tight ${amountSizeClass}`}
+                                >
+                                  {amount}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {cls.description}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

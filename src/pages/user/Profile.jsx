@@ -11,7 +11,12 @@ import {
   AiOutlineClose,
   AiOutlineHome,
 } from "react-icons/ai";
-import { validateEmail, validatePhone, validateName, validateAddress } from "../../utils/validation";
+import {
+  validateEmail,
+  validatePhone,
+  validateName,
+  validateAddress,
+} from "../../utils/validation";
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -91,26 +96,6 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <main className="max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
-        <div className="mb-6 sm:mb-8 animate-slideInUp">
-          <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl dark:text-white">
-                Profil Saya
-              </h1>
-              <p className="mt-2 text-sm text-gray-600 sm:text-base dark:text-gray-400">
-                Kelola informasi profil Anda
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:scale-105 active:scale-95 sm:px-4"
-            >
-              <AiOutlineHome size={16} className="sm:w-[18px] sm:h-[18px]" />
-              <span className="hidden sm:inline">Ke Home</span>
-            </button>
-          </div>
-        </div>
-
         <div
           className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 card-3d animate-slideInUp sm:p-6 lg:p-8"
           style={{ animationDelay: "0.2s" }}
@@ -155,7 +140,7 @@ const Profile = () => {
 
           <div className="space-y-6">
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <label className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 <AiOutlineUser size={16} />
                 Nama Lengkap
               </label>
@@ -165,16 +150,24 @@ const Profile = () => {
                   value={formData.name}
                   onChange={(e) => {
                     setFormData({ ...formData, name: e.target.value });
-                    setFieldErrors({ ...fieldErrors, name: validateName(e.target.value) });
+                    setFieldErrors({
+                      ...fieldErrors,
+                      name: validateName(e.target.value),
+                    });
                   }}
                   className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
-                    fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                    fieldErrors.name
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 dark:border-slate-600"
                   }`}
                 />
-                {fieldErrors.name && (
-                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.name}</p>
-                )}
-              ) : (
+              ) : null}
+              {fieldErrors.name && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {fieldErrors.name}
+                </p>
+              )}
+              {!isEditing && (
                 <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.name || "-"}
                 </div>
@@ -182,7 +175,7 @@ const Profile = () => {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <label className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 <AiOutlineMail size={16} />
                 Email
               </label>
@@ -192,16 +185,24 @@ const Profile = () => {
                   value={formData.email}
                   onChange={(e) => {
                     setFormData({ ...formData, email: e.target.value });
-                    setFieldErrors({ ...fieldErrors, email: validateEmail(e.target.value) });
+                    setFieldErrors({
+                      ...fieldErrors,
+                      email: validateEmail(e.target.value),
+                    });
                   }}
                   className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
-                    fieldErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                    fieldErrors.email
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 dark:border-slate-600"
                   }`}
                 />
-                {fieldErrors.email && (
-                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.email}</p>
-                )}
-              ) : (
+              ) : null}
+              {fieldErrors.email && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {fieldErrors.email}
+                </p>
+              )}
+              {!isEditing && (
                 <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.email || "-"}
                 </div>
@@ -209,7 +210,7 @@ const Profile = () => {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <label className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 <AiOutlinePhone size={16} />
                 Nomor Telepon
               </label>
@@ -219,17 +220,25 @@ const Profile = () => {
                   value={formData.phone}
                   onChange={(e) => {
                     setFormData({ ...formData, phone: e.target.value });
-                    setFieldErrors({ ...fieldErrors, phone: validatePhone(e.target.value) });
+                    setFieldErrors({
+                      ...fieldErrors,
+                      phone: validatePhone(e.target.value),
+                    });
                   }}
                   placeholder="081234567890"
                   className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
-                    fieldErrors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                    fieldErrors.phone
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 dark:border-slate-600"
                   }`}
                 />
-                {fieldErrors.phone && (
-                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.phone}</p>
-                )}
-              ) : (
+              ) : null}
+              {fieldErrors.phone && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {fieldErrors.phone}
+                </p>
+              )}
+              {!isEditing && (
                 <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.phone || "-"}
                 </div>
@@ -245,17 +254,25 @@ const Profile = () => {
                   value={formData.address}
                   onChange={(e) => {
                     setFormData({ ...formData, address: e.target.value });
-                    setFieldErrors({ ...fieldErrors, address: validateAddress(e.target.value) });
+                    setFieldErrors({
+                      ...fieldErrors,
+                      address: validateAddress(e.target.value),
+                    });
                   }}
                   rows={3}
                   className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
-                    fieldErrors.address ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                    fieldErrors.address
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 dark:border-slate-600"
                   }`}
                 />
-                {fieldErrors.address && (
-                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.address}</p>
-                )}
-              ) : (
+              ) : null}
+              {fieldErrors.address && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {fieldErrors.address}
+                </p>
+              )}
+              {!isEditing && (
                 <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.address || "-"}
                 </div>

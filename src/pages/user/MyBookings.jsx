@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { formatPrice, formatDate, getStatusBadge } from "../../data/mockData";
 import BookingDetailModal from "../../components/BookingDetailModal";
 import ETicketModal from "../../components/ETicketModal";
+import ConfirmModal from "../../components/ConfirmModal";
 import {
   AiOutlineCalendar,
   AiOutlineClockCircle,
@@ -13,12 +14,11 @@ import {
   AiOutlineDownload,
   AiOutlineEye,
   AiOutlineSearch,
-  AiOutlineHome,
 } from "react-icons/ai";
 import { FaPlane, FaMapMarkerAlt } from "react-icons/fa";
 
 const MyBookings = () => {
-  const { bookings } = useData();
+  const { bookings, requestRefund } = useData();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -27,6 +27,10 @@ const MyBookings = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showETicketModal, setShowETicketModal] = useState(false);
+  const [refundConfirm, setRefundConfirm] = useState({
+    isOpen: false,
+    booking: null,
+  });
 
   const userBookings = bookings.filter((b) => b.email === user?.email);
 
@@ -86,30 +90,23 @@ const MyBookings = () => {
     },
   ];
 
+  const isRefundAvailable = (booking) => {
+    const today = new Date();
+    const departureDate = new Date(booking.departureDate);
+
+    return (
+      booking.paymentStatus === "Paid" &&
+      booking.status === "Confirmed" &&
+      departureDate > today &&
+      (!booking.refundStatus ||
+        booking.refundStatus === "none" ||
+        booking.refundStatus === "rejected")
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <main className="max-w-6xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8 animate-slideInUp">
-          <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-              <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl dark:text-white">
-                Riwayat Pemesanan
-              </h1>
-              <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">
-                Kelola dan lihat detail semua pemesanan Anda
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:scale-105 active:scale-95 sm:px-4"
-            >
-              <AiOutlineHome size={16} className="sm:w-[18px] sm:h-[18px]" />
-              <span className="hidden sm:inline">Ke Home</span>
-            </button>
-          </div>
-        </div>
-
         {/* Search */}
         <div
           className="mb-4 sm:mb-6 animate-slideInUp"
@@ -198,7 +195,7 @@ const MyBookings = () => {
                       <div className="text-2xl font-bold text-gray-900 dark:text-white">
                         {booking.bookingCode}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <span
                           className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 ${getStatusBadge(
                             booking.status
@@ -222,6 +219,24 @@ const MyBookings = () => {
                         >
                           {booking.paymentStatus}
                         </span>
+                        {booking.refundStatus &&
+                          booking.refundStatus !== "none" && (
+                            <span
+                              className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
+                                booking.refundStatus === "approved"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                  : booking.refundStatus === "requested"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                              }`}
+                            >
+                              {booking.refundStatus === "approved"
+                                ? "Refund Disetujui"
+                                : booking.refundStatus === "requested"
+                                ? "Refund Diproses"
+                                : "Refund Ditolak"}
+                            </span>
+                          )}
                       </div>
                     </div>
 
@@ -303,6 +318,17 @@ const MyBookings = () => {
                         <AiOutlineDownload size={16} />
                         E-Ticket
                       </button>
+                      {isRefundAvailable(booking) && (
+                        <button
+                          onClick={() =>
+                            setRefundConfirm({ isOpen: true, booking })
+                          }
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 dark:bg-slate-700 dark:text-red-300 dark:border-red-400/60 dark:hover:bg-slate-600"
+                        >
+                          <AiOutlineCloseCircle size={16} />
+                          Ajukan Refund
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -328,6 +354,23 @@ const MyBookings = () => {
           setShowETicketModal(false);
           setSelectedBooking(null);
         }}
+      />
+      <ConfirmModal
+        isOpen={refundConfirm.isOpen}
+        onClose={() => setRefundConfirm({ isOpen: false, booking: null })}
+        onConfirm={() => {
+          if (refundConfirm.booking) {
+            requestRefund(
+              refundConfirm.booking.id,
+              "Permintaan refund diajukan oleh user"
+            );
+          }
+        }}
+        type="info"
+        title="Ajukan Refund"
+        message="Anda yakin ingin mengajukan refund untuk pemesanan ini? Admin akan meninjau permintaan Anda."
+        confirmText="Ajukan Refund"
+        cancelText="Batal"
       />
     </div>
   );

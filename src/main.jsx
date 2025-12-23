@@ -17,11 +17,13 @@ try {
   );
 } catch (error) {
   console.error('Error rendering app:', error);
-  rootElement.innerHTML = `
-    <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
-      <h1 style="color: red;">Error Loading Application</h1>
-      <p>${error.message}</p>
+  // Gunakan createRoot untuk render error message tanpa innerHTML
+  const errorRoot = createRoot(rootElement);
+  errorRoot.render(
+    <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
+      <h1 style={{ color: 'red' }}>Error Loading Application</h1>
+      <p>{error.message}</p>
       <p>Please check the browser console for more details.</p>
     </div>
-  `;
+  );
 }

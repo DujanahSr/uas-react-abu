@@ -11,7 +11,6 @@ import {
   AiOutlineClockCircle,
   AiOutlineLeft,
   AiOutlineRight,
-  AiOutlineHome,
 } from "react-icons/ai";
 import { FaPlane } from "react-icons/fa";
 
@@ -138,24 +137,9 @@ const SearchResults = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <main className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between animate-slideInUp">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
-              Hasil Pencarian
-            </h1>
-            <p className="mt-2 text-sm text-gray-600 sm:text-base dark:text-gray-400">
-              {filteredFlights.length} penerbangan ditemukan
-            </p>
-          </div>
+        {/* Actions */}
+        <div className="flex flex-wrap gap-2 mb-6 sm:gap-3 sm:justify-end animate-slideInUp">
           <div className="flex flex-wrap gap-2 sm:gap-3">
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:scale-105 active:scale-95 sm:px-4"
-            >
-              <AiOutlineHome size={16} className="sm:w-[18px] sm:h-[18px]" />
-              <span className="hidden sm:inline">Ke Home</span>
-            </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:scale-105 active:scale-95 sm:px-4 lg:hidden"

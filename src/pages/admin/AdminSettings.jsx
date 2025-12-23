@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../../components/Header";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
@@ -25,6 +25,7 @@ const AdminSettings = () => {
   const { admin } = useAuth();
   const { flights, bookings } = useData();
   const [activeTab, setActiveTab] = useState("password");
+  const downloadLinkRef = useRef(null);
 
   // Password State
   const [passwordData, setPasswordData] = useState({
@@ -206,15 +207,19 @@ const AdminSettings = () => {
     const dataStr = JSON.stringify(dataToExport, null, 2);
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `flybook_backup_${
-      new Date().toISOString().split("T")[0]
-    }.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    
+    // Gunakan ref untuk trigger download tanpa DOM methods
+    if (downloadLinkRef.current) {
+      downloadLinkRef.current.href = url;
+      downloadLinkRef.current.download = `flybook_backup_${
+        new Date().toISOString().split("T")[0]
+      }.json`;
+      downloadLinkRef.current.click();
+      // Cleanup URL setelah delay
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
 
     setAlert({
       isOpen: true,
@@ -874,6 +879,13 @@ const AdminSettings = () => {
         title={confirm.title}
         message={confirm.message}
         type="danger"
+      />
+
+      {/* Hidden download link untuk export data */}
+      <a
+        ref={downloadLinkRef}
+        style={{ display: "none" }}
+        aria-hidden="true"
       />
     </div>
   );

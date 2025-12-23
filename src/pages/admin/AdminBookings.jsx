@@ -1,312 +1,4 @@
-// import React, { useState, useEffect } from 'react';
-// import Header from '../components/Header';
-// import { bookingsData, formatPrice, formatDate, getStatusBadge } from '../data/mockData';
-
-// const Bookings = () => {
-//   const [bookings, setBookings] = useState([]);
-//   const [filteredBookings, setFilteredBookings] = useState([]);
-//   const [filterStatus, setFilterStatus] = useState('all');
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [sortBy, setSortBy] = useState('bookingDate');
-
-//   useEffect(() => {
-//     setBookings(bookingsData);
-//     setFilteredBookings(bookingsData);
-//   }, []);
-
-//   useEffect(() => {
-//     let filtered = [...bookings];
-
-//     // Apply status filter
-//     if (filterStatus !== 'all') {
-//       filtered = filtered.filter(booking =>
-//         booking.status.toLowerCase() === filterStatus ||
-//         booking.paymentStatus.toLowerCase() === filterStatus
-//       );
-//     }
-
-//     // Apply search filter
-//     if (searchTerm) {
-//       filtered = filtered.filter(booking =>
-//         booking.bookingCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         booking.passengerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         booking.flightNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         booking.route.toLowerCase().includes(searchTerm.toLowerCase())
-//       );
-//     }
-
-//     // Apply sorting
-//     filtered.sort((a, b) => {
-//       switch (sortBy) {
-//         case 'bookingDate':
-//           return new Date(b.bookingDate) - new Date(a.bookingDate);
-//         case 'departureDate':
-//           return new Date(a.departureDate) - new Date(b.departureDate);
-//         case 'price':
-//           return b.totalPrice - a.totalPrice;
-//         case 'passenger':
-//           return a.passengerName.localeCompare(b.passengerName);
-//         default:
-//           return 0;
-//       }
-//     });
-
-//     setFilteredBookings(filtered);
-//   }, [bookings, filterStatus, searchTerm, sortBy]);
-
-//   const handleStatusChange = (bookingId, newStatus) => {
-//     setBookings(prev => prev.map(booking =>
-//       booking.id === bookingId ? { ...booking, status: newStatus } : booking
-//     ));
-//   };
-
-//   const handlePaymentStatusChange = (bookingId, newStatus) => {
-//     setBookings(prev => prev.map(booking =>
-//       booking.id === bookingId ? { ...booking, paymentStatus: newStatus } : booking
-//     ));
-//   };
-
-//   const deleteBooking = (bookingId) => {
-//     if (window.confirm('Apakah Anda yakin ingin menghapus booking ini?')) {
-//       setBookings(prev => prev.filter(booking => booking.id !== bookingId));
-//     }
-//   };
-
-//   const clearFilters = () => {
-//     setFilterStatus('all');
-//     setSearchTerm('');
-//     setSortBy('bookingDate');
-//   };
-
-//   const totalRevenue = filteredBookings
-//     .filter(b => b.paymentStatus === 'Paid')
-//     .reduce((sum, booking) => sum + booking.totalPrice, 0);
-
-//   const stats = {
-//     total: filteredBookings.length,
-//     confirmed: filteredBookings.filter(b => b.status === 'Confirmed').length,
-//     pending: filteredBookings.filter(b => b.status === 'Pending').length,
-//     paid: filteredBookings.filter(b => b.paymentStatus === 'Paid').length,
-//     revenue: totalRevenue
-//   };
-
-//   return (
-//     <div>
-//       <Header
-//         title="Kelola Pemesanan"
-//         subtitle="Kelola dan pantau semua pemesanan tiket pesawat"
-//       />
-
-//       <main className="p-6">
-//         {/* Stats Cards */}
-//         <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 lg:grid-cols-5">
-//           <div className="p-6 bg-white border-l-4 border-blue-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
-//             <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-//             <div className="text-sm text-gray-600">Total Pemesanan</div>
-//           </div>
-//           <div className="p-6 bg-white border-l-4 border-green-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
-//             <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
-//             <div className="text-sm text-gray-600">Confirmed</div>
-//           </div>
-//           <div className="p-6 bg-white border-l-4 border-yellow-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
-//             <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-//             <div className="text-sm text-gray-600">Pending</div>
-//           </div>
-//           <div className="p-6 bg-white border-l-4 border-purple-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
-//             <div className="text-2xl font-bold text-purple-600">{stats.paid}</div>
-//             <div className="text-sm text-gray-600">Paid</div>
-//           </div>
-//           <div className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
-//             <div className="text-lg font-bold text-indigo-600">{formatPrice(stats.revenue)}</div>
-//             <div className="text-sm text-gray-600">Total Revenue</div>
-//           </div>
-//         </div>
-
-//         {/* Filters and Controls */}
-//         <div className="p-6 mb-6 bg-white shadow-sm dark:bg-slate-800/90 rounded-xl">
-//           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-//             {/* Search */}
-//             <div>
-//               <label className="block mb-2 text-sm font-medium text-gray-700">Cari</label>
-//               <input
-//                 type="text"
-//                 placeholder="Kode booking, nama, nomor flight..."
-//                 value={searchTerm}
-//                 onChange={(e) => setSearchTerm(e.target.value)}
-//                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             </div>
-
-//             {/* Status Filter */}
-//             <div>
-//               <label className="block mb-2 text-sm font-medium text-gray-700">Filter Status</label>
-//               <select
-//                 value={filterStatus}
-//                 onChange={(e) => setFilterStatus(e.target.value)}
-//                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               >
-//                 <option value="all">Semua Status</option>
-//                 <option value="confirmed">Confirmed</option>
-//                 <option value="pending">Pending</option>
-//                 <option value="paid">Paid</option>
-//                 <option value="unpaid">Unpaid</option>
-//               </select>
-//             </div>
-
-//             {/* Sort */}
-//             <div>
-//               <label className="block mb-2 text-sm font-medium text-gray-700">Urutkan</label>
-//               <select
-//                 value={sortBy}
-//                 onChange={(e) => setSortBy(e.target.value)}
-//                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               >
-//                 <option value="bookingDate">Tanggal Booking</option>
-//                 <option value="departureDate">Tanggal Berangkat</option>
-//                 <option value="price">Harga</option>
-//                 <option value="passenger">Nama Penumpang</option>
-//               </select>
-//             </div>
-//           </div>
-
-//           <div className="flex justify-end mt-4">
-//             <button
-//               onClick={clearFilters}
-//               className="px-4 py-2 text-gray-600 transition-colors border border-gray-300 rounded-lg hover:text-gray-800 hover:bg-gray-50"
-//             >
-//               Reset Filter
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Results Summary */}
-//         <div className="mb-6">
-//           <h2 className="text-xl font-bold text-gray-800">
-//             {filteredBookings.length} Pemesanan Ditemukan
-//           </h2>
-//         </div>
-
-//         {/* Bookings Table */}
-//         <div className="overflow-hidden bg-white shadow-sm dark:bg-slate-800/90 rounded-xl">
-//           {filteredBookings.length > 0 ? (
-//             <div className="overflow-x-auto">
-//               <table className="w-full">
-//                 <thead className="bg-gray-50 dark:bg-slate-800/90">
-//                   <tr>
-//                     <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-//                       Booking Info
-//                     </th>
-//                     <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-//                       Penumpang
-//                     </th>
-//                     <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-//                       Penerbangan
-//                     </th>
-//                     <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-//                       Status
-//                     </th>
-//                     <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-//                       Total
-//                     </th>
-//                     <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-//                       Actions
-//                     </th>
-//                   </tr>
-//                 </thead>
-//                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800/90">
-//                   {filteredBookings.map((booking) => (
-//                     <tr key={booking.id} className="hover:bg-gray-50">
-//                       <td className="px-6 py-4 whitespace-nowrap">
-//                         <div>
-//                           <div className="text-sm font-medium text-gray-900">{booking.bookingCode}</div>
-//                           <div className="text-sm text-gray-500">{formatDate(booking.bookingDate)}</div>
-//                         </div>
-//                       </td>
-//                       <td className="px-6 py-4 whitespace-nowrap">
-//                         <div>
-//                           <div className="text-sm font-medium text-gray-900">{booking.passengerName}</div>
-//                           <div className="text-sm text-gray-500">{booking.passengers} Penumpang</div>
-//                           <div className="text-sm text-gray-500">{booking.email}</div>
-//                         </div>
-//                       </td>
-//                       <td className="px-6 py-4 whitespace-nowrap">
-//                         <div>
-//                           <div className="text-sm font-medium text-gray-900">{booking.flightNumber}</div>
-//                           <div className="text-sm text-gray-500">{booking.airline}</div>
-//                           <div className="text-sm text-gray-500">{booking.route}</div>
-//                           <div className="text-sm text-gray-500">{booking.departureDate} {booking.departureTime}</div>
-//                         </div>
-//                       </td>
-//                       <td className="px-6 py-4 whitespace-nowrap">
-//                         <div className="space-y-2">
-//                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(booking.status)}`}>
-//                             {booking.status}
-//                           </span>
-//                           <br />
-//                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(booking.paymentStatus)}`}>
-//                             {booking.paymentStatus}
-//                           </span>
-//                         </div>
-//                       </td>
-//                       <td className="px-6 py-4 whitespace-nowrap">
-//                         <div className="text-sm font-medium text-gray-900">{formatPrice(booking.totalPrice)}</div>
-//                         <div className="text-sm text-gray-500">{booking.class}</div>
-//                       </td>
-//                       <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-//                         <div className="flex space-x-2">
-//                           <select
-//                             value={booking.status}
-//                             onChange={(e) => handleStatusChange(booking.id, e.target.value)}
-//                             className="px-2 py-1 text-xs border border-gray-300 rounded"
-//                           >
-//                             <option value="Confirmed">Confirmed</option>
-//                             <option value="Pending">Pending</option>
-//                             <option value="Cancelled">Cancelled</option>
-//                           </select>
-//                           <select
-//                             value={booking.paymentStatus}
-//                             onChange={(e) => handlePaymentStatusChange(booking.id, e.target.value)}
-//                             className="px-2 py-1 text-xs border border-gray-300 rounded"
-//                           >
-//                             <option value="Paid">Paid</option>
-//                             <option value="Pending">Pending</option>
-//                             <option value="Failed">Failed</option>
-//                           </select>
-//                           <button
-//                             onClick={() => deleteBooking(booking.id)}
-//                             className="px-2 py-1 text-red-600 border border-red-300 rounded hover:text-red-800 hover:bg-red-50"
-//                           >
-//                             Hapus
-//                           </button>
-//                         </div>
-//                       </td>
-//                     </tr>
-//                   ))}
-//                 </tbody>
-//               </table>
-//             </div>
-//           ) : (
-//             <div className="py-20 text-center">
-//               <div className="mb-4 text-6xl text-gray-400">📋</div>
-//               <h3 className="mb-2 text-xl font-medium text-gray-900">Tidak ada pemesanan ditemukan</h3>
-//               <p className="mb-6 text-gray-500">Coba ubah filter atau kata kunci pencarian Anda</p>
-//               <button
-//                 onClick={clearFilters}
-//                 className="px-6 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
-//               >
-//                 Tampilkan Semua Pemesanan
-//               </button>
-//             </div>
-//           )}
-//         </div>
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default Bookings;
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../../components/Header";
 import { useData } from "../../context/DataContext";
 import { formatPrice, formatDate, getStatusBadge } from "../../data/mockData";
@@ -336,7 +28,7 @@ import {
 import { FaPlane, FaUserFriends } from "react-icons/fa";
 
 const AdminBookings = () => {
-  const { bookings, updateBooking, deleteBooking } = useData();
+  const { bookings, updateBooking, deleteBooking, processRefund } = useData();
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -348,6 +40,12 @@ const AdminBookings = () => {
     isOpen: false,
     bookingId: null,
   });
+  const [confirmRefund, setConfirmRefund] = useState({
+    isOpen: false,
+    bookingId: null,
+    action: null, // 'approve' | 'reject'
+  });
+  const downloadLinkRef = useRef(null);
 
   useEffect(() => {
     let filtered = [...bookings];
@@ -655,16 +353,20 @@ const AdminBookings = () => {
       type: "application/vnd.ms-excel",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Laporan_Pemesanan_${new Date()
-      .toISOString()
-      .slice(0, 10)
-      .replace(/-/g, "_")}.xls`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    
+    // Gunakan ref untuk trigger download tanpa DOM methods
+    if (downloadLinkRef.current) {
+      downloadLinkRef.current.href = url;
+      downloadLinkRef.current.download = `Laporan_Pemesanan_${new Date()
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, "_")}.xls`;
+      downloadLinkRef.current.click();
+      // Cleanup URL setelah delay
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
   };
 
   const totalRevenue = filteredBookings
@@ -1009,8 +711,25 @@ const AdminBookings = () => {
                           </span>
                           <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                             <AiOutlineCheckCircle size={12} />
-                            Paid
+                            {booking.paymentStatus || "Paid"}
                           </span>
+                          {booking.refundStatus && booking.refundStatus !== "none" && (
+                            <span
+                              className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-full ${
+                                booking.refundStatus === "approved"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                  : booking.refundStatus === "requested"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                              }`}
+                            >
+                              {booking.refundStatus === "approved"
+                                ? "Refund Disetujui"
+                                : booking.refundStatus === "requested"
+                                ? "Refund Diminta"
+                                : "Refund Ditolak"}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -1026,7 +745,7 @@ const AdminBookings = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-col gap-2 min-w-[180px]">
+                        <div className="flex flex-col gap-2 min-w-[190px]">
                           <div className="flex gap-2">
                             <select
                               value={booking.status}
@@ -1040,7 +759,7 @@ const AdminBookings = () => {
                               <option>Cancelled</option>
                             </select>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <button
                               onClick={() => {
                                 setSelectedBooking(booking);
@@ -1066,6 +785,34 @@ const AdminBookings = () => {
                               <AiOutlineDelete size={12} /> Hapus
                             </button>
                           </div>
+                          {booking.refundStatus === "requested" && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <button
+                                onClick={() =>
+                                  setConfirmRefund({
+                                    isOpen: true,
+                                    bookingId: booking.id,
+                                    action: "approve",
+                                  })
+                                }
+                                className="flex items-center justify-center flex-1 gap-1 px-3 py-2 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300"
+                              >
+                                Setujui Refund
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setConfirmRefund({
+                                    isOpen: true,
+                                    bookingId: booking.id,
+                                    action: "reject",
+                                  })
+                                }
+                                className="flex items-center justify-center flex-1 gap-1 px-3 py-2 text-xs font-semibold text-yellow-700 bg-yellow-50 border border-yellow-200 rounded hover:bg-yellow-100 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300"
+                              >
+                                Tolak Refund
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1147,6 +894,43 @@ const AdminBookings = () => {
         message="Apakah Anda yakin ingin menghapus pemesanan ini? Tindakan ini tidak dapat dibatalkan."
         confirmText="Ya, Hapus"
         cancelText="Batal"
+      />
+
+      {/* Confirm Refund Modal */}
+      <ConfirmModal
+        isOpen={confirmRefund.isOpen}
+        onClose={() =>
+          setConfirmRefund({ isOpen: false, bookingId: null, action: null })
+        }
+        onConfirm={() => {
+          if (confirmRefund.bookingId && confirmRefund.action) {
+            processRefund(confirmRefund.bookingId, confirmRefund.action);
+          }
+        }}
+        type={confirmRefund.action === "approve" ? "info" : "warning"}
+        title={
+          confirmRefund.action === "approve"
+            ? "Setujui Refund"
+            : "Tolak Refund"
+        }
+        message={
+          confirmRefund.action === "approve"
+            ? "Anda yakin ingin menyetujui refund untuk pemesanan ini? Status booking akan diubah menjadi Cancelled dan payment menjadi Refunded."
+            : "Anda yakin ingin menolak permintaan refund untuk pemesanan ini?"
+        }
+        confirmText={
+          confirmRefund.action === "approve"
+            ? "Ya, Setujui"
+            : "Ya, Tolak"
+        }
+        cancelText="Batal"
+      />
+
+      {/* Hidden download link untuk export Excel */}
+      <a
+        ref={downloadLinkRef}
+        style={{ display: "none" }}
+        aria-hidden="true"
       />
     </div>
   );

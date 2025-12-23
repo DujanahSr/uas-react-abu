@@ -21,9 +21,8 @@ export const DataProvider = ({ children }) => {
     isInitialized.current = true;
 
     try {
+      // Initialize flights
       const storedFlights = localStorage.getItem("flights");
-      const storedBookings = localStorage.getItem("bookings");
-
       if (storedFlights) {
         try {
           const parsedFlights = JSON.parse(storedFlights);
@@ -43,11 +42,13 @@ export const DataProvider = ({ children }) => {
         }
       } else {
         // Jika tidak ada data di localStorage, inisialisasi dengan flightsData
+        // Ini akan terjadi saat pertama kali clone dari GitHub
         setFlights(flightsData);
         localStorage.setItem("flights", JSON.stringify(flightsData));
       }
 
-      // Load bookings dari localStorage jika ada, jika tidak mulai dengan array kosong
+      // Initialize bookings
+      const storedBookings = localStorage.getItem("bookings");
       if (storedBookings) {
         try {
           const parsedBookings = JSON.parse(storedBookings);
@@ -55,18 +56,31 @@ export const DataProvider = ({ children }) => {
             setBookings(parsedBookings);
           } else {
             setBookings([]);
+            localStorage.setItem("bookings", JSON.stringify([]));
           }
         } catch (e) {
           console.error("Error parsing bookings:", e);
           localStorage.removeItem("bookings");
           setBookings([]);
+          localStorage.setItem("bookings", JSON.stringify([]));
         }
       } else {
         // Jika tidak ada data di localStorage, mulai dengan array kosong
         setBookings([]);
+        localStorage.setItem("bookings", JSON.stringify([]));
       }
     } catch (error) {
+      // Fallback jika ada error umum (misalnya localStorage tidak tersedia)
       console.error("Error loading data:", error);
+      // Tetap set default data agar aplikasi tetap berjalan
+      setFlights(flightsData);
+      setBookings([]);
+      try {
+        localStorage.setItem("flights", JSON.stringify(flightsData));
+        localStorage.setItem("bookings", JSON.stringify([]));
+      } catch (storageError) {
+        console.error("Error saving default data:", storageError);
+      }
     }
   }, []);
 
@@ -138,6 +152,12 @@ export const DataProvider = ({ children }) => {
       paymentStatus: "Paid", // Payment status otomatis Paid karena sudah bayar saat booking
       bookingDate:
         newBooking.bookingDate || new Date().toISOString().split("T")[0],
+      // Default refund fields
+      refundStatus: newBooking.refundStatus || "none",
+      refundReason: newBooking.refundReason || "",
+      refundRequestedAt: newBooking.refundRequestedAt || null,
+      refundProcessedAt: newBooking.refundProcessedAt || null,
+      refundNote: newBooking.refundNote || "",
     };
 
     setBookings((prev) => {
@@ -196,6 +216,79 @@ export const DataProvider = ({ children }) => {
     setFlights((prev) => prev.filter((f) => f.id !== id));
   };
 
+  // Refund Management
+  const requestRefund = (id, reason = "Permintaan refund dari user") => {
+    setBookings((prev) => {
+      const updated = prev.map((b) => {
+        if (b.id !== id) return b;
+
+        // Hanya izinkan request refund jika belum pernah atau sudah ditolak sebelumnya
+        if (
+          b.refundStatus &&
+          b.refundStatus !== "none" &&
+          b.refundStatus !== "rejected"
+        ) {
+          return b;
+        }
+
+        return {
+          ...b,
+          refundStatus: "requested",
+          refundReason: reason,
+          refundRequestedAt: new Date().toISOString(),
+        };
+      });
+
+      try {
+        localStorage.setItem("bookings", JSON.stringify(updated));
+      } catch (error) {
+        console.error("Error saving refund request to localStorage:", error);
+      }
+
+      return updated;
+    });
+  };
+
+  const processRefund = (id, decision, note = "") => {
+    setBookings((prev) => {
+      const now = new Date().toISOString();
+
+      const updated = prev.map((b) => {
+        if (b.id !== id) return b;
+
+        // Hanya proses jika ada request
+        if (b.refundStatus !== "requested") return b;
+
+        if (decision === "approve") {
+          return {
+            ...b,
+            refundStatus: "approved",
+            refundProcessedAt: now,
+            refundNote: note,
+            status: "Cancelled",
+            paymentStatus: "Refunded",
+          };
+        }
+
+        // reject
+        return {
+          ...b,
+          refundStatus: "rejected",
+          refundProcessedAt: now,
+          refundNote: note,
+        };
+      });
+
+      try {
+        localStorage.setItem("bookings", JSON.stringify(updated));
+      } catch (error) {
+        console.error("Error saving refund processing to localStorage:", error);
+      }
+
+      return updated;
+    });
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -207,6 +300,8 @@ export const DataProvider = ({ children }) => {
         addFlight,
         updateFlight,
         deleteFlight,
+        requestRefund,
+        processRefund,
       }}
     >
       {children}
