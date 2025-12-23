@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import FlightCard from '../../components/FlightCard';
-import { useData } from '../../context/DataContext';
-import { searchFlights, sortFlights, airlines } from '../../data/mockData';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import FlightCard from "../../components/FlightCard";
+import { useData } from "../../context/DataContext";
+import { searchFlights, sortFlights, airlines } from "../../data/mockData";
 import {
   AiOutlineFilter,
   AiOutlineSortAscending,
@@ -10,35 +10,36 @@ import {
   AiOutlineDollarCircle,
   AiOutlineClockCircle,
   AiOutlineLeft,
-  AiOutlineRight
-} from 'react-icons/ai';
-import { FaPlane } from 'react-icons/fa';
+  AiOutlineRight,
+  AiOutlineHome,
+} from "react-icons/ai";
+import { FaPlane } from "react-icons/fa";
 
 const SearchResults = () => {
   const location = useLocation();
   const { flights } = useData();
   const navigate = useNavigate();
-  
+
   const [showFilters, setShowFilters] = useState(false);
   const [filteredFlights, setFilteredFlights] = useState([]);
-  const [sortBy, setSortBy] = useState('price-asc');
+  const [sortBy, setSortBy] = useState("price-asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const [filters, setFilters] = useState({
-    maxPrice: '',
-    minPrice: '',
-    airline: '',
-    departureTime: '',
-    duration: ''
+    maxPrice: "",
+    minPrice: "",
+    airline: "",
+    departureTime: "",
+    duration: "",
   });
 
   // Update filters when location.state changes (when navigating from search form)
   useEffect(() => {
     const initialFilters = location.state?.filters || {};
     if (Object.keys(initialFilters).length > 0) {
-      setFilters(prev => ({
+      setFilters((prev) => ({
         ...prev,
-        ...initialFilters
+        ...initialFilters,
       }));
     }
     // Cleanup: reset state when component unmounts or route changes
@@ -50,47 +51,52 @@ const SearchResults = () => {
 
   useEffect(() => {
     const initialFilters = location.state?.filters || {};
-    
+
     // Debug: log filters untuk troubleshooting
-    console.log('Search Filters:', initialFilters);
-    
+    console.log("Search Filters:", initialFilters);
+
     // Gunakan flights dari DataContext untuk konsistensi dengan FlightDetail
     let results = searchFlights(initialFilters, flights);
-    
+
     // Debug: log hasil pencarian
-    console.log('Search Results:', results.length, 'flights found');
+    console.log("Search Results:", results.length, "flights found");
     if (results.length === 0 && initialFilters.from && initialFilters.to) {
-      console.log('No flights found for:', initialFilters);
+      console.log("No flights found for:", initialFilters);
       // Coba cari tanpa filter tanggal untuk debug
       const debugFilters = { ...initialFilters };
       delete debugFilters.departureDate;
       const debugResults = searchFlights(debugFilters, flights);
-      console.log('Debug search (without date):', debugResults.length, 'flights found');
+      console.log(
+        "Debug search (without date):",
+        debugResults.length,
+        "flights found"
+      );
     }
-    
+
     // Apply additional filters
     if (filters.maxPrice) {
-      results = results.filter(f => f.price <= parseInt(filters.maxPrice));
+      results = results.filter((f) => f.price <= parseInt(filters.maxPrice));
     }
     if (filters.minPrice) {
-      results = results.filter(f => f.price >= parseInt(filters.minPrice));
+      results = results.filter((f) => f.price >= parseInt(filters.minPrice));
     }
     if (filters.airline) {
-      results = results.filter(f => 
-        f.airline.toLowerCase().includes(filters.airline.toLowerCase()) ||
-        f.airlineCode === filters.airline
+      results = results.filter(
+        (f) =>
+          f.airline.toLowerCase().includes(filters.airline.toLowerCase()) ||
+          f.airlineCode === filters.airline
       );
     }
     if (filters.departureTime) {
-      const [start, end] = filters.departureTime.split('-');
-      results = results.filter(f => {
-        const time = parseInt(f.departureTime.split(':')[0]);
+      const [start, end] = filters.departureTime.split("-");
+      results = results.filter((f) => {
+        const time = parseInt(f.departureTime.split(":")[0]);
         return time >= parseInt(start) && time <= parseInt(end);
       });
     }
     if (filters.duration) {
       const maxDuration = parseInt(filters.duration);
-      results = results.filter(f => f.durationMinutes <= maxDuration);
+      results = results.filter((f) => f.durationMinutes <= maxDuration);
     }
 
     // Apply sorting
@@ -106,11 +112,11 @@ const SearchResults = () => {
 
   const clearFilters = () => {
     setFilters({
-      maxPrice: '',
-      minPrice: '',
-      airline: '',
-      departureTime: '',
-      duration: ''
+      maxPrice: "",
+      minPrice: "",
+      airline: "",
+      departureTime: "",
+      duration: "",
     });
     setCurrentPage(1);
   };
@@ -123,37 +129,44 @@ const SearchResults = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const maxPrice = Math.max(...flights.map(f => f.price), 0);
-  const minPrice = Math.min(...flights.map(f => f.price), 0);
+  const maxPrice = Math.max(...flights.map((f) => f.price), 0);
+  const minPrice = Math.min(...flights.map((f) => f.price), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main className="px-4 py-8 mx-auto max-w-7xl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <main className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between animate-slideInUp">
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
               Hasil Pencarian
             </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-sm text-gray-600 sm:text-base dark:text-gray-400">
               {filteredFlights.length} penerbangan ditemukan
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:scale-105 active:scale-95 sm:px-4"
+            >
+              <AiOutlineHome size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Ke Home</span>
+            </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:scale-105 active:scale-95 sm:px-4 lg:hidden"
             >
-              <AiOutlineFilter size={18} />
-              Filter
+              <AiOutlineFilter size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Filter</span>
             </button>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all sm:flex-none sm:px-4"
             >
               <option value="price-asc">Harga Terendah</option>
               <option value="price-desc">Harga Tertinggi</option>
@@ -166,8 +179,12 @@ const SearchResults = () => {
 
         <div className="grid gap-6 lg:grid-cols-4">
           {/* Filter Sidebar */}
-          <div className={`lg:col-span-1 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-            <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700 sticky top-4">
+          <div
+            className={`lg:col-span-1 ${
+              showFilters ? "block" : "hidden lg:block"
+            } animate-slideInLeft`}
+          >
+            <div className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 sticky top-4 card-3d sm:p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <AiOutlineFilter size={20} />
@@ -190,23 +207,31 @@ const SearchResults = () => {
                   </label>
                   <div className="space-y-3">
                     <div>
-                      <label className="block mb-1 text-xs text-gray-600 dark:text-gray-400">Min</label>
+                      <label className="block mb-1 text-xs text-gray-600 dark:text-gray-400">
+                        Min
+                      </label>
                       <input
                         type="number"
                         value={filters.minPrice}
-                        onChange={(e) => setFilters({...filters, minPrice: e.target.value})}
-                        placeholder={minPrice.toLocaleString('id-ID')}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        onChange={(e) =>
+                          setFilters({ ...filters, minPrice: e.target.value })
+                        }
+                        placeholder={minPrice.toLocaleString("id-ID")}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
-                      <label className="block mb-1 text-xs text-gray-600 dark:text-gray-400">Max</label>
+                      <label className="block mb-1 text-xs text-gray-600 dark:text-gray-400">
+                        Max
+                      </label>
                       <input
                         type="number"
                         value={filters.maxPrice}
-                        onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
-                        placeholder={maxPrice.toLocaleString('id-ID')}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        onChange={(e) =>
+                          setFilters({ ...filters, maxPrice: e.target.value })
+                        }
+                        placeholder={maxPrice.toLocaleString("id-ID")}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -220,11 +245,13 @@ const SearchResults = () => {
                   </label>
                   <select
                     value={filters.airline}
-                    onChange={(e) => setFilters({...filters, airline: e.target.value})}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) =>
+                      setFilters({ ...filters, airline: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Semua Maskapai</option>
-                    {airlines.map(airline => (
+                    {airlines.map((airline) => (
                       <option key={airline.code} value={airline.code}>
                         {airline.name}
                       </option>
@@ -240,8 +267,10 @@ const SearchResults = () => {
                   </label>
                   <select
                     value={filters.departureTime}
-                    onChange={(e) => setFilters({...filters, departureTime: e.target.value})}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) =>
+                      setFilters({ ...filters, departureTime: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Semua Waktu</option>
                     <option value="0-6">00:00 - 06:00</option>
@@ -259,8 +288,10 @@ const SearchResults = () => {
                   </label>
                   <select
                     value={filters.duration}
-                    onChange={(e) => setFilters({...filters, duration: e.target.value})}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) =>
+                      setFilters({ ...filters, duration: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Semua Durasi</option>
                     <option value="90">≤ 1.5 jam</option>
@@ -273,7 +304,7 @@ const SearchResults = () => {
                 {/* Clear Filters */}
                 <button
                   onClick={clearFilters}
-                  className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95"
                 >
                   Reset Filter
                 </button>
@@ -282,32 +313,40 @@ const SearchResults = () => {
           </div>
 
           {/* Results */}
-          <div className="lg:col-span-3">
-        {filteredFlights.length === 0 ? (
-          <div className="py-32 text-center">
-                <FaPlane size={80} className="mx-auto mb-6 text-gray-300 dark:text-gray-700" />
-                <h2 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
+          <div className="lg:col-span-3 animate-slideInRight">
+            {filteredFlights.length === 0 ? (
+              <div className="py-20 text-center sm:py-32 animate-scaleIn">
+                <FaPlane
+                  size={64}
+                  className="mx-auto mb-6 text-gray-300 dark:text-slate-600 animate-float3D sm:w-20 sm:h-20"
+                />
+                <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl dark:text-white">
                   Tidak ada penerbangan
                 </h2>
-                <p className="mb-8 text-xl text-gray-600 dark:text-gray-400">
+                <p className="mb-8 text-base text-gray-600 sm:text-xl dark:text-gray-400">
                   Coba ubah tanggal atau rute pencarian
                 </p>
                 <button
-                  onClick={() => navigate('/')}
-                  className="px-8 py-4 text-lg font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700"
+                  onClick={() => navigate("/")}
+                  className="px-6 py-3 text-base font-medium text-white transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl sm:px-8 sm:py-4 sm:text-lg"
                 >
-              Cari Lagi
-            </button>
-          </div>
-        ) : (
+                  Cari Lagi
+                </button>
+              </div>
+            ) : (
               <>
-                <div className="space-y-4">
-                  {paginatedFlights.map(flight => (
-                    <FlightCard
+                <div className="space-y-4 sm:space-y-6">
+                  {paginatedFlights.map((flight, index) => (
+                    <div
                       key={flight.id}
-                      flight={flight}
-                      onSelect={handleSelectFlight}
-                    />
+                      className="animate-slideInUp"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <FlightCard
+                        flight={flight}
+                        onSelect={handleSelectFlight}
+                      />
+                    </div>
                   ))}
                 </div>
 
@@ -315,25 +354,40 @@ const SearchResults = () => {
                 {totalPages > 1 && (
                   <div className="flex flex-col items-center justify-between gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 sm:flex-row">
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Menampilkan <strong className="text-gray-900 dark:text-white">{startIndex + 1}</strong> - <strong className="text-gray-900 dark:text-white">{Math.min(endIndex, filteredFlights.length)}</strong> dari <strong className="text-gray-900 dark:text-white">{filteredFlights.length}</strong> penerbangan
+                      Menampilkan{" "}
+                      <strong className="text-gray-900 dark:text-white">
+                        {startIndex + 1}
+                      </strong>{" "}
+                      -{" "}
+                      <strong className="text-gray-900 dark:text-white">
+                        {Math.min(endIndex, filteredFlights.length)}
+                      </strong>{" "}
+                      dari{" "}
+                      <strong className="text-gray-900 dark:text-white">
+                        {filteredFlights.length}
+                      </strong>{" "}
+                      penerbangan
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
                         className={`flex items-center gap-1 px-4 py-2 text-sm rounded-lg transition-colors ${
                           currentPage === 1
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600"
+                            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
                         }`}
                       >
                         <AiOutlineLeft size={16} />
                         Sebelumnya
                       </button>
-                      
+
                       <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        {Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1
+                        ).map((page) => {
                           // Show first page, last page, current page, and pages around current
                           if (
                             page === 1 ||
@@ -346,8 +400,8 @@ const SearchResults = () => {
                                 onClick={() => handlePageChange(page)}
                                 className={`px-3 py-2 text-sm rounded-lg transition-colors ${
                                   currentPage === page
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
                                 }`}
                               >
                                 {page}
@@ -358,7 +412,10 @@ const SearchResults = () => {
                             page === currentPage + 2
                           ) {
                             return (
-                              <span key={page} className="px-2 text-gray-500 dark:text-gray-400">
+                              <span
+                                key={page}
+                                className="px-2 text-gray-500 dark:text-gray-400"
+                              >
                                 ...
                               </span>
                             );
@@ -372,8 +429,8 @@ const SearchResults = () => {
                         disabled={currentPage === totalPages}
                         className={`flex items-center gap-1 px-4 py-2 text-sm rounded-lg transition-colors ${
                           currentPage === totalPages
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600"
+                            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
                         }`}
                       >
                         Selanjutnya

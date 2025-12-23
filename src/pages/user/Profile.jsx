@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import AlertModal from "../../components/AlertModal";
 import {
   AiOutlineUser,
@@ -8,10 +9,13 @@ import {
   AiOutlineEdit,
   AiOutlineSave,
   AiOutlineClose,
+  AiOutlineHome,
 } from "react-icons/ai";
+import { validateEmail, validatePhone, validateName, validateAddress } from "../../utils/validation";
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -25,6 +29,7 @@ const Profile = () => {
     title: "",
     message: "",
   });
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Update formData ketika user berubah
   useEffect(() => {
@@ -39,18 +44,24 @@ const Profile = () => {
   }, [user]);
 
   const handleSave = () => {
-    // Validasi
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.phone ||
-      !formData.address
-    ) {
+    // Validasi semua field
+    const errors = {
+      name: validateName(formData.name),
+      email: validateEmail(formData.email),
+      phone: validatePhone(formData.phone),
+      address: validateAddress(formData.address),
+    };
+
+    setFieldErrors(errors);
+
+    // Cek apakah ada error
+    const hasErrors = Object.values(errors).some((error) => error !== "");
+    if (hasErrors) {
       setAlert({
         isOpen: true,
         type: "warning",
-        title: "Form Belum Lengkap",
-        message: "Semua field wajib diisi!",
+        title: "Form Belum Valid",
+        message: "Mohon perbaiki error pada form!",
       });
       return;
     }
@@ -58,6 +69,7 @@ const Profile = () => {
     // Update user data menggunakan updateUser dari context
     updateUser(formData);
     setIsEditing(false);
+    setFieldErrors({});
     setAlert({
       isOpen: true,
       type: "success",
@@ -77,44 +89,64 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main className="max-w-4xl px-4 py-8 mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Profil Saya
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Kelola informasi profil Anda
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <main className="max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
+        <div className="mb-6 sm:mb-8 animate-slideInUp">
+          <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl dark:text-white">
+                Profil Saya
+              </h1>
+              <p className="mt-2 text-sm text-gray-600 sm:text-base dark:text-gray-400">
+                Kelola informasi profil Anda
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:scale-105 active:scale-95 sm:px-4"
+            >
+              <AiOutlineHome size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Ke Home</span>
+            </button>
+          </div>
         </div>
 
-        <div className="p-8 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div
+          className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 card-3d animate-slideInUp sm:p-6 lg:p-8"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between sm:mb-8">
+            <h2 className="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
               Informasi Profil
             </h2>
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-white transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl sm:text-base"
               >
-                <AiOutlineEdit size={18} />
+                <AiOutlineEdit size={16} className="sm:w-[18px] sm:h-[18px]" />
                 Edit Profil
               </button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 sm:px-4"
                 >
-                  <AiOutlineClose size={18} />
+                  <AiOutlineClose
+                    size={16}
+                    className="sm:w-[18px] sm:h-[18px]"
+                  />
                   Batal
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-white transition-all duration-300 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg hover:from-green-700 hover:to-emerald-700 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl sm:px-4"
                 >
-                  <AiOutlineSave size={18} />
+                  <AiOutlineSave
+                    size={16}
+                    className="sm:w-[18px] sm:h-[18px]"
+                  />
                   Simpan
                 </button>
               </div>
@@ -131,13 +163,19 @@ const Profile = () => {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    setFieldErrors({ ...fieldErrors, name: validateName(e.target.value) });
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                    fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                  }`}
                 />
+                {fieldErrors.name && (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.name}</p>
+                )}
               ) : (
-                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-gray-700/50 text-gray-900 dark:text-white">
+                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.name || "-"}
                 </div>
               )}
@@ -152,13 +190,19 @@ const Profile = () => {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    setFieldErrors({ ...fieldErrors, email: validateEmail(e.target.value) });
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                    fieldErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                  }`}
                 />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.email}</p>
+                )}
               ) : (
-                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-gray-700/50 text-gray-900 dark:text-white">
+                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.email || "-"}
                 </div>
               )}
@@ -173,14 +217,20 @@ const Profile = () => {
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="08xxxxxxxxxx"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => {
+                    setFormData({ ...formData, phone: e.target.value });
+                    setFieldErrors({ ...fieldErrors, phone: validatePhone(e.target.value) });
+                  }}
+                  placeholder="081234567890"
+                  className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                    fieldErrors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                  }`}
                 />
+                {fieldErrors.phone && (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.phone}</p>
+                )}
               ) : (
-                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-gray-700/50 text-gray-900 dark:text-white">
+                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.phone || "-"}
                 </div>
               )}
@@ -193,14 +243,20 @@ const Profile = () => {
               {isEditing ? (
                 <textarea
                   value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setFormData({ ...formData, address: e.target.value });
+                    setFieldErrors({ ...fieldErrors, address: validateAddress(e.target.value) });
+                  }}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                    fieldErrors.address ? "border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-slate-600"
+                  }`}
                 />
+                {fieldErrors.address && (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.address}</p>
+                )}
               ) : (
-                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-gray-700/50 text-gray-900 dark:text-white">
+                <div className="px-4 py-3 bg-gray-50 rounded-lg dark:bg-slate-700/50 text-gray-900 dark:text-white">
                   {user?.address || "-"}
                 </div>
               )}

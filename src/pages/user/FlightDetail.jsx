@@ -5,6 +5,13 @@ import { useAuth } from "../../context/AuthContext";
 import { formatPrice } from "../../data/mockData";
 import AlertModal from "../../components/AlertModal";
 import {
+  validateKTP,
+  validatePassport,
+  validateDateOfBirth,
+  validateEmail,
+  validatePhone,
+} from "../../utils/validation";
+import {
   AiOutlineUser,
   AiOutlineMail,
   AiOutlinePhone,
@@ -14,6 +21,7 @@ import {
   AiOutlineArrowRight,
   AiOutlineArrowLeft,
   AiOutlineInfoCircle,
+  AiOutlineHome,
 } from "react-icons/ai";
 import { FaPlane, FaUserFriends, FaMapMarkerAlt } from "react-icons/fa";
 import { HiOutlineUserGroup } from "react-icons/hi";
@@ -38,12 +46,17 @@ const FlightDetail = () => {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Penerbangan tidak ditemukan
           </h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            ID: {id}
-          </p>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">ID: {id}</p>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-500">
             Total flights: {flights.length}
           </p>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-6 flex items-center gap-2 px-6 py-3 mx-auto text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all"
+          >
+            <AiOutlineHome size={18} />
+            Kembali ke Home
+          </button>
         </div>
       </div>
     );
@@ -74,6 +87,8 @@ const FlightDetail = () => {
     title: "",
     message: "",
   });
+  const [passengerErrors, setPassengerErrors] = useState({});
+  const [contactErrors, setContactErrors] = useState({});
 
   // Update contact ketika user berubah (misalnya setelah edit profil)
   useEffect(() => {
@@ -102,10 +117,12 @@ const FlightDetail = () => {
 
   const getPrice = () => {
     // Map selectedClass ke format yang benar
-    const priceKey = 
-      selectedClass === "economy" ? "economy" :
-      selectedClass === "business" ? "business" :
-      "first";
+    const priceKey =
+      selectedClass === "economy"
+        ? "economy"
+        : selectedClass === "business"
+        ? "business"
+        : "first";
     return flight.prices?.[priceKey] || flight.price;
   };
 
@@ -142,41 +159,52 @@ const FlightDetail = () => {
       setPassengerData(newPassengerData);
     }
     if (currentStep === 2) {
-      // Validate passenger data
-      const invalid = passengerData.find(
-        (p) => !p.name || !p.idNumber || !p.dob
-      );
-      if (invalid) {
+      // Validasi semua data penumpang
+      const errors = {};
+      let hasErrors = false;
+
+      passengerData.forEach((p, index) => {
+        if (!p.name) {
+          errors[`passenger_${index}_name`] = "Nama lengkap wajib diisi";
+          hasErrors = true;
+        }
+
+        if (!p.idNumber) {
+          errors[`passenger_${index}_idNumber`] = "Nomor identitas wajib diisi";
+          hasErrors = true;
+        } else {
+          const cleanId = p.idNumber.replace(/\s/g, "");
+          let idError = "";
+          if (/^\d{16}$/.test(cleanId)) {
+            idError = validateKTP(cleanId);
+          } else {
+            idError = validatePassport(cleanId);
+          }
+          if (idError) {
+            errors[`passenger_${index}_idNumber`] = idError;
+            hasErrors = true;
+          }
+        }
+
+        if (!p.dob) {
+          errors[`passenger_${index}_dob`] = "Tanggal lahir wajib diisi";
+          hasErrors = true;
+        } else {
+          const dobError = validateDateOfBirth(p.dob, flight.departureDate);
+          if (dobError) {
+            errors[`passenger_${index}_dob`] = dobError;
+            hasErrors = true;
+          }
+        }
+      });
+
+      if (hasErrors) {
+        setPassengerErrors(errors);
         setAlert({
           isOpen: true,
           type: "warning",
-          title: "Data Penumpang Belum Lengkap",
-          message:
-            "Mohon lengkapi data semua penumpang (nama, nomor identitas, dan tanggal lahir)!",
-        });
-        return;
-      }
-
-      // Validasi tanggal lahir: minimal 7 hari sebelum tanggal departure
-      const departureDate = new Date(flight.departureDate);
-      const minDate = new Date(departureDate);
-      minDate.setDate(minDate.getDate() - 7); // 7 hari sebelum departure
-      minDate.setHours(0, 0, 0, 0);
-
-      const invalidDob = passengerData.find((p) => {
-        if (!p.dob) return false; // Sudah divalidasi di atas
-        const dob = new Date(p.dob);
-        dob.setHours(0, 0, 0, 0);
-        return dob > minDate;
-      });
-
-      if (invalidDob) {
-        const minDateStr = minDate.toISOString().split("T")[0];
-        setAlert({
-          isOpen: true,
-          type: "error",
-          title: "Tanggal Lahir Tidak Valid",
-          message: `Tanggal lahir minimal 7 hari sebelum tanggal keberangkatan (maksimal: ${minDateStr}).\n\nIni untuk memastikan penumpang sudah berusia minimal 7 hari saat keberangkatan.`,
+          title: "Data Belum Valid",
+          message: "Mohon perbaiki error pada data penumpang!",
         });
         return;
       }
@@ -245,52 +273,67 @@ const FlightDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main className="px-4 py-8 mx-auto max-w-7xl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <main className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Flight Info Header */}
-        <div className="p-6 mb-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="p-4 mb-6 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 card-3d animate-slideInUp sm:p-6">
+          <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
                 {flight.airline} - {flight.flightNumber}
               </h1>
-              <p className="mt-1 text-gray-600 dark:text-gray-400">
+              <p className="mt-1 text-sm text-gray-600 sm:text-base dark:text-gray-400">
                 {flight.from} → {flight.to}
               </p>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                Mulai dari {formatPrice(flight.prices?.economy || flight.price)}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Pilih kelas di bawah untuk melihat harga
-              </div>
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 sm:ml-4 sm:px-4"
+            >
+              <AiOutlineHome size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Ke Home</span>
+            </button>
+          </div>
+          <div className="text-left sm:text-right">
+            <div className="text-xl font-bold text-blue-600 sm:text-2xl dark:text-blue-400">
+              Mulai dari {formatPrice(flight.prices?.economy || flight.price)}
+            </div>
+            <div className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
+              Pilih kelas di bawah untuk melihat harga
             </div>
           </div>
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div
+          className="mb-6 sm:mb-8 animate-slideInUp"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
             {[1, 2, 3, 4].map((step) => (
               <React.Fragment key={step}>
-                <div className="flex items-center">
+                <div className="flex items-center flex-shrink-0">
                   <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
+                    className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 sm:w-10 sm:h-10 ${
                       currentStep >= step
-                        ? "bg-blue-600 border-blue-600 text-white"
-                        : "bg-white border-gray-300 text-gray-400 dark:bg-gray-800 dark:border-gray-600"
+                        ? "bg-blue-600 border-blue-600 text-white shadow-lg scale-110"
+                        : "bg-white border-gray-300 text-gray-400 dark:bg-slate-800 dark:border-slate-600"
                     }`}
                   >
                     {currentStep > step ? (
-                      <AiOutlineCheckCircle size={20} />
+                      <AiOutlineCheckCircle
+                        size={18}
+                        className="sm:w-5 sm:h-5"
+                      />
                     ) : (
-                      <span className="font-bold">{step}</span>
+                      <span className="text-sm font-bold sm:text-base">
+                        {step}
+                      </span>
                     )}
                   </div>
-                  <div className="ml-3 hidden sm:block">
+                  <div className="ml-2 hidden sm:block">
                     <div
-                      className={`text-sm font-medium ${
+                      className={`text-xs font-medium sm:text-sm ${
                         currentStep >= step
                           ? "text-blue-600 dark:text-blue-400"
                           : "text-gray-400 dark:text-gray-500"
@@ -305,10 +348,10 @@ const FlightDetail = () => {
                 </div>
                 {step < 4 && (
                   <div
-                    className={`flex-1 h-0.5 mx-4 ${
+                    className={`flex-1 h-0.5 mx-2 transition-all duration-300 sm:mx-4 ${
                       currentStep > step
                         ? "bg-blue-600"
-                        : "bg-gray-300 dark:bg-gray-600"
+                        : "bg-gray-300 dark:bg-slate-600"
                     }`}
                   />
                 )}
@@ -317,10 +360,13 @@ const FlightDetail = () => {
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="p-8 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div
+              className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 card-3d animate-slideInUp sm:p-6 lg:p-8"
+              style={{ animationDelay: "0.3s" }}
+            >
               {/* Step 1: Jumlah Penumpang & Kelas */}
               {currentStep === 1 && (
                 <div>
@@ -354,7 +400,7 @@ const FlightDetail = () => {
                             );
                           setPassengerData(newData);
                         }}
-                        className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                       >
                         {[1, 2, 3, 4, 5, 6].map((n) => (
                           <option key={n} value={n}>
@@ -369,36 +415,59 @@ const FlightDetail = () => {
                         Pilih Kelas Penerbangan *
                       </label>
                       <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-                        Semua kelas tersedia untuk penerbangan ini. Pilih kelas yang diinginkan.
+                        Semua kelas tersedia untuk penerbangan ini. Pilih kelas
+                        yang diinginkan.
                       </p>
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         {[
                           {
                             value: "economy",
                             label: "Ekonomi",
-                            description: "Kelas standar dengan fasilitas lengkap",
+                            description:
+                              "Kelas standar dengan fasilitas lengkap",
                             price: flight.prices?.economy || flight.price,
-                            badgeColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-                            borderColor: selectedClass === "economy" ? "border-green-600" : "border-gray-300 dark:border-gray-600",
-                            bgColor: selectedClass === "economy" ? "bg-green-50 dark:bg-green-900/20" : "bg-white dark:bg-gray-700",
+                            badgeColor:
+                              "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+                            borderColor:
+                              selectedClass === "economy"
+                                ? "border-green-600"
+                                : "border-gray-300 dark:border-gray-600",
+                            bgColor:
+                              selectedClass === "economy"
+                                ? "bg-green-50 dark:bg-green-900/20"
+                                : "bg-white dark:bg-gray-700",
                           },
                           {
                             value: "business",
                             label: "Bisnis",
                             description: "Lebih nyaman dengan layanan premium",
                             price: flight.prices?.business || flight.price * 2,
-                            badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-                            borderColor: selectedClass === "business" ? "border-blue-600" : "border-gray-300 dark:border-gray-600",
-                            bgColor: selectedClass === "business" ? "bg-blue-50 dark:bg-blue-900/20" : "bg-white dark:bg-gray-700",
+                            badgeColor:
+                              "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+                            borderColor:
+                              selectedClass === "business"
+                                ? "border-blue-600"
+                                : "border-gray-300 dark:border-gray-600",
+                            bgColor:
+                              selectedClass === "business"
+                                ? "bg-blue-50 dark:bg-blue-900/20"
+                                : "bg-white dark:bg-gray-700",
                           },
                           {
                             value: "first",
                             label: "First Class",
                             description: "Pengalaman premium terbaik",
                             price: flight.prices?.first || flight.price * 4,
-                            badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-                            borderColor: selectedClass === "first" ? "border-purple-600" : "border-gray-300 dark:border-gray-600",
-                            bgColor: selectedClass === "first" ? "bg-purple-50 dark:bg-purple-900/20" : "bg-white dark:bg-gray-700",
+                            badgeColor:
+                              "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+                            borderColor:
+                              selectedClass === "first"
+                                ? "border-purple-600"
+                                : "border-gray-300 dark:border-gray-600",
+                            bgColor:
+                              selectedClass === "first"
+                                ? "bg-purple-50 dark:bg-purple-900/20"
+                                : "bg-white dark:bg-gray-700",
                           },
                         ].map((cls) => (
                           <button
@@ -408,11 +477,16 @@ const FlightDetail = () => {
                             className={`p-5 border-2 rounded-xl transition-all text-left hover:shadow-md ${cls.borderColor} ${cls.bgColor}`}
                           >
                             <div className="flex items-center justify-between mb-2">
-                              <span className={`px-2 py-1 text-xs font-semibold rounded ${cls.badgeColor}`}>
+                              <span
+                                className={`px-2 py-1 text-xs font-semibold rounded ${cls.badgeColor}`}
+                              >
                                 {cls.label}
                               </span>
                               {selectedClass === cls.value && (
-                                <AiOutlineCheckCircle className="text-green-600 dark:text-green-400" size={20} />
+                                <AiOutlineCheckCircle
+                                  className="text-green-600 dark:text-green-400"
+                                  size={20}
+                                />
                               )}
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
@@ -474,7 +548,7 @@ const FlightDetail = () => {
                                   e.target.value
                                 )
                               }
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="Mr">Mr</option>
                               <option value="Mrs">Mrs</option>
@@ -502,7 +576,7 @@ const FlightDetail = () => {
                               }
                               placeholder="Sesuai KTP/Passport"
                               disabled={index === 0 && user?.name}
-                              className={`w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                              className={`w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
                                 index === 0 && user?.name
                                   ? "bg-gray-50 dark:bg-gray-700/50 cursor-not-allowed"
                                   : ""
@@ -529,10 +603,23 @@ const FlightDetail = () => {
                                   e.target.value
                                 )
                               }
-                              placeholder="KTP/Passport"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                              placeholder="KTP (16 digit) atau Passport (6-9 karakter)"
+                              className={`w-full px-4 py-2 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                                passengerErrors[`passenger_${index}_idNumber`]
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : "border-gray-300 dark:border-slate-600"
+                              }`}
                               required
                             />
+                            {passengerErrors[`passenger_${index}_idNumber`] && (
+                              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                                {passengerErrors[`passenger_${index}_idNumber`]}
+                              </p>
+                            )}
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              KTP: 16 digit angka | Passport: 6-9 karakter
+                              (huruf & angka)
+                            </p>
                           </div>
                           <div>
                             <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -557,12 +644,23 @@ const FlightDetail = () => {
                                 maxDate.setDate(maxDate.getDate() - 7);
                                 return maxDate.toISOString().split("T")[0];
                               })()}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                              className={`w-full px-4 py-2 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                                passengerErrors[`passenger_${index}_dob`]
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : "border-gray-300 dark:border-slate-600"
+                              }`}
                               required
                             />
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                              Minimal 7 hari sebelum tanggal keberangkatan
-                            </p>
+                            {passengerErrors[`passenger_${index}_dob`] && (
+                              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                                {passengerErrors[`passenger_${index}_dob`]}
+                              </p>
+                            )}
+                            {!passengerErrors[`passenger_${index}_dob`] && (
+                              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Minimal 7 hari sebelum tanggal keberangkatan
+                              </p>
+                            )}
                           </div>
                           <div className="md:col-span-2">
                             <label className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -644,7 +742,7 @@ const FlightDetail = () => {
                         type="text"
                         value={contact.name}
                         disabled
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-400 bg-gray-50 cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-400 bg-gray-50 cursor-not-allowed"
                       />
                     </div>
                     <div>
@@ -656,7 +754,7 @@ const FlightDetail = () => {
                         type="email"
                         value={contact.email}
                         disabled
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-400 bg-gray-50 cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-400 bg-gray-50 cursor-not-allowed"
                       />
                     </div>
                     <div>
@@ -668,7 +766,7 @@ const FlightDetail = () => {
                         type="tel"
                         value={contact.phone}
                         disabled
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-400 bg-gray-50 cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-400 bg-gray-50 cursor-not-allowed"
                       />
                     </div>
 
@@ -698,7 +796,7 @@ const FlightDetail = () => {
 
                   <div className="space-y-6">
                     {/* Flight Summary */}
-                    <div className="p-6 bg-gray-50 rounded-lg dark:bg-gray-700/50">
+                    <div className="p-6 bg-gray-50 rounded-lg dark:bg-slate-700/50">
                       <h3 className="mb-4 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <FaPlane size={18} />
                         Detail Penerbangan
@@ -814,7 +912,7 @@ const FlightDetail = () => {
 
           {/* Sidebar - Price Summary */}
           <div className="lg:col-span-1">
-            <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700 sticky top-4">
+            <div className="p-6 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 sticky top-4 card-3d">
               <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">
                 Ringkasan Harga
               </h3>

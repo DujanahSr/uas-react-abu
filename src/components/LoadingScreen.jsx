@@ -3,7 +3,7 @@ import { FaPlane } from "react-icons/fa";
 
 const LoadingScreen = ({ message = "Memuat..." }) => {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-slate-500 via-gray-600 to-slate-700 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Animated Background Circles */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-white opacity-10 rounded-full animate-pulse-slow"></div>

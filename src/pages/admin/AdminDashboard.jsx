@@ -187,25 +187,43 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-200/20 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
+
       <Header
         title="Dashboard Admin"
         subtitle={`Selamat datang, ${admin?.email || "Admin"}`}
         onSearch={handleHeaderSearch}
         searchPlaceholder="Cari penerbangan (contoh: GA-123) atau booking (contoh: FBK12345)..."
       />
-      <div className="p-4 md:p-6">
+      <div className="relative z-10 p-4 md:p-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:mb-8">
           {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
+            <div
+              key={index}
+              className="animate-slideInUp"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <StatCard {...stat} />
+            </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
           {/* Recent Flights */}
-          <div className="lg:col-span-2">
-            <div className="p-6 mb-6 transition-colors bg-white border border-gray-200 shadow-sm dark:bg-gray-800 rounded-xl dark:border-gray-700">
+          <div
+            className="lg:col-span-2 animate-slideInUp"
+            style={{ animationDelay: "0.5s" }}
+          >
+            <div className="p-4 mb-4 sm:mb-6 transition-all duration-300 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 rounded-xl card-3d sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaPlane size={20} />
@@ -224,7 +242,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
               {headerSearch && (
-                <div className="mb-4 p-3 text-sm bg-gray-100 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="mb-4 p-3 text-sm bg-gray-100/80 backdrop-blur-sm border-b border-gray-200/50 dark:bg-slate-700/50 dark:border-slate-600/50 rounded-lg animate-slideInUp">
                   Menampilkan hasil untuk:{" "}
                   <strong className="text-gray-900 dark:text-white">
                     "{headerSearch}"
@@ -236,7 +254,10 @@ const AdminDashboard = () => {
           </div>
 
           {/* Recent Bookings */}
-          <div className="p-6 transition-colors bg-white border border-gray-200 shadow-sm dark:bg-gray-800 rounded-xl dark:border-gray-700">
+          <div
+            className="p-4 transition-all duration-300 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 rounded-xl card-3d animate-slideInUp sm:p-6"
+            style={{ animationDelay: "0.6s" }}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
                 <AiOutlineFileText size={18} />
@@ -251,7 +272,7 @@ const AdminDashboard = () => {
             </div>
             <div className="space-y-4">
               {headerSearch && (
-                <div className="mb-2 p-3 text-sm bg-gray-100 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="mb-2 p-3 text-sm bg-gray-100/80 backdrop-blur-sm border-b border-gray-200/50 dark:bg-slate-700/50 dark:border-slate-600/50 rounded-lg animate-slideInUp">
                   Menampilkan hasil untuk:{" "}
                   <strong className="text-gray-900 dark:text-white">
                     "{headerSearch}"
@@ -259,10 +280,11 @@ const AdminDashboard = () => {
                 </div>
               )}
               {recentBookings.length > 0 ? (
-                recentBookings.map((booking) => (
+                recentBookings.map((booking, index) => (
                   <div
                     key={booking.id}
-                    className="flex items-center justify-between p-4 transition-colors border border-gray-100 rounded-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="flex flex-col gap-3 p-3 transition-all duration-300 border border-gray-100/50 rounded-lg dark:border-slate-600/50 bg-gray-50/80 backdrop-blur-sm dark:bg-slate-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-600 hover:shadow-md transform hover:scale-[1.02] sm:flex-row sm:items-center sm:justify-between sm:p-4 animate-slideInUp"
+                    style={{ animationDelay: `${0.7 + index * 0.1}s` }}
                     onClick={() => navigate("/admin/bookings")}
                   >
                     <div>
@@ -275,11 +297,11 @@ const AdminDashboard = () => {
                         Penumpang
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-blue-600 dark:text-blue-400">
+                    <div className="text-left sm:text-right">
+                      <p className="text-base font-bold text-blue-600 sm:text-lg dark:text-blue-400">
                         {formatPrice(booking.totalPrice)}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
                         {formatDate(booking.bookingDate)}
                       </p>
                     </div>
@@ -302,8 +324,11 @@ const AdminDashboard = () => {
         </div>
 
         {/* Top Airlines & Routes */}
-        <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-2">
-          <div className="p-6 transition-colors bg-white border border-gray-200 shadow-sm dark:bg-gray-800 rounded-xl dark:border-gray-700">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 mt-4 sm:mt-6 lg:grid-cols-2">
+          <div
+            className="p-4 transition-all duration-300 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 rounded-xl card-3d animate-slideInUp sm:p-6"
+            style={{ animationDelay: "0.8s" }}
+          >
             <h3 className="mb-6 font-bold text-gray-800 dark:text-white flex items-center gap-2">
               <FaPlane size={18} />
               Maskapai Terlaris
@@ -446,10 +471,10 @@ const AdminDashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="py-12 text-center">
+              <div className="py-12 text-center animate-scaleIn">
                 <FaPlane
                   size={48}
-                  className="mx-auto mb-4 text-gray-300 dark:text-gray-600"
+                  className="mx-auto mb-4 text-gray-300 dark:text-slate-600 animate-float3D"
                 />
                 <p className="text-gray-500 dark:text-gray-400">
                   Belum ada data booking
@@ -461,17 +486,21 @@ const AdminDashboard = () => {
             )}
           </div>
 
-          <div className="p-6 transition-colors bg-white border border-gray-200 shadow-sm dark:bg-gray-800 rounded-xl dark:border-gray-700">
-            <h3 className="mb-4 font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <div
+            className="p-4 transition-all duration-300 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 rounded-xl card-3d animate-slideInUp sm:p-6"
+            style={{ animationDelay: "0.9s" }}
+          >
+            <h3 className="mb-4 text-base font-bold text-gray-800 sm:text-lg dark:text-white flex items-center gap-2">
               <AiOutlineRise size={18} />
               Rute Terpopuler
             </h3>
             {popularRoutes.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {popularRoutes.map((route, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-4 border border-gray-100 rounded-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    className="flex flex-col gap-3 p-3 border border-gray-100/50 rounded-lg dark:border-slate-600/50 bg-gray-50/80 backdrop-blur-sm dark:bg-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-4 animate-slideInUp"
+                    style={{ animationDelay: `${1.0 + index * 0.1}s` }}
                   >
                     <div className="flex-1">
                       <p className="font-medium text-gray-800 dark:text-white">
@@ -483,8 +512,8 @@ const AdminDashboard = () => {
                         <span>{route.tickets} tiket</span>
                       </div>
                     </div>
-                    <div className="text-right ml-4">
-                      <p className="font-bold text-green-600 dark:text-green-400">
+                    <div className="text-left sm:text-right sm:ml-4">
+                      <p className="text-base font-bold text-green-600 sm:text-lg dark:text-green-400">
                         {formatPrice(route.revenue)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -495,10 +524,10 @@ const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="py-12 text-center">
+              <div className="py-12 text-center animate-scaleIn">
                 <AiOutlineRise
                   size={48}
-                  className="mx-auto mb-4 text-gray-300 dark:text-gray-600"
+                  className="mx-auto mb-4 text-gray-300 dark:text-slate-600 animate-float3D"
                 />
                 <p className="text-gray-500 dark:text-gray-400">
                   Belum ada data booking

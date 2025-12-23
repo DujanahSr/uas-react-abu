@@ -351,7 +351,15 @@ const AdminSettings = () => {
   ];
 
   return (
-    <div className="min-h-screen transition-colors bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-200/20 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
       <Header
         title="Pengaturan"
         subtitle="Kelola preferensi dan pengaturan sistem"
@@ -362,7 +370,7 @@ const AdminSettings = () => {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
           {/* Sidebar Tabs */}
           <div className="lg:col-span-1">
-            <div className="p-4 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="p-4 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-slate-800/90 dark:border-slate-700/50">
               <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
                 Menu Pengaturan
               </h3>
@@ -392,7 +400,7 @@ const AdminSettings = () => {
           <div className="lg:col-span-3">
             {/* Ganti Password */}
             {activeTab === "password" && (
-              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-slate-800/90 dark:border-slate-700/50">
                 <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <AiOutlineLock size={20} />
                   Ganti Password Admin
@@ -413,7 +421,7 @@ const AdminSettings = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                         placeholder="Masukkan password saat ini"
                       />
                       <button
@@ -446,7 +454,7 @@ const AdminSettings = () => {
                         onChange={(e) =>
                           handlePasswordChange("newPassword", e.target.value)
                         }
-                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                         placeholder="Masukkan password baru (min. 6 karakter)"
                       />
                       <button
@@ -482,7 +490,7 @@ const AdminSettings = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                         placeholder="Konfirmasi password baru"
                       />
                       <button
@@ -517,7 +525,7 @@ const AdminSettings = () => {
 
             {/* Pengaturan Tampilan */}
             {activeTab === "display" && (
-              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-slate-800/90 dark:border-slate-700/50">
                 <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <AiOutlineSetting size={20} />
                   Pengaturan Tampilan
@@ -536,7 +544,7 @@ const AdminSettings = () => {
                           parseInt(e.target.value)
                         )
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                       <option value={5}>5 items</option>
                       <option value={10}>10 items</option>
@@ -596,7 +604,7 @@ const AdminSettings = () => {
                             parseInt(e.target.value) || 30
                           )
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Interval refresh dalam detik (10-300 detik)
@@ -617,7 +625,7 @@ const AdminSettings = () => {
 
             {/* Format Data */}
             {activeTab === "format" && (
-              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-slate-800/90 dark:border-slate-700/50">
                 <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <AiOutlineFileText size={20} />
                   Pengaturan Format Data
@@ -634,7 +642,7 @@ const AdminSettings = () => {
                       onChange={(e) =>
                         handleFormatSettingsChange("currency", e.target.value)
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="IDR">IDR - Rupiah Indonesia</option>
                       <option value="USD">USD - US Dollar</option>
@@ -656,7 +664,7 @@ const AdminSettings = () => {
                       onChange={(e) =>
                         handleFormatSettingsChange("dateFormat", e.target.value)
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                       <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -682,14 +690,14 @@ const AdminSettings = () => {
             {/* Backup & Restore */}
             {activeTab === "backup" && (
               <div className="space-y-6">
-                <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-slate-800/90 dark:border-slate-700/50">
                   <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <AiOutlineDatabase size={20} />
                     Backup & Restore Data
                   </h3>
 
                   <div className="space-y-4">
-                    <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                    <div className="p-4 border border-gray-200 rounded-lg dark:border-slate-700/50">
                       <h4 className="mb-2 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <AiOutlineDownload size={18} />
                         Export Data
@@ -707,7 +715,7 @@ const AdminSettings = () => {
                       </button>
                     </div>
 
-                    <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                    <div className="p-4 border border-gray-200 rounded-lg dark:border-slate-700/50">
                       <h4 className="mb-2 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <AiOutlineUpload size={18} />
                         Import Data
@@ -750,7 +758,7 @@ const AdminSettings = () => {
 
             {/* Informasi Sistem */}
             {activeTab === "info" && (
-              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-slate-800/90 dark:border-slate-700/50">
                 <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <AiFillInfoCircle size={20} />
                   Informasi Sistem
@@ -818,7 +826,7 @@ const AdminSettings = () => {
                   </div>
                 </div>
 
-                <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="mt-6 p-4 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
                   <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">
                     Detail Sistem
                   </h4>

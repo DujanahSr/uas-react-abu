@@ -1,11 +1,19 @@
 
 import React, { useState } from 'react';
-import { AiOutlineBell, AiOutlineSearch, AiOutlineSun, AiOutlineMoon } from 'react-icons/ai';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { AiOutlineBell, AiOutlineSearch, AiOutlineSun, AiOutlineMoon, AiOutlineHome, AiOutlineDashboard } from 'react-icons/ai';
 import { useTheme } from '../context/ThemeContext';
 
-const Header = ({ title, subtitle, onSearch, searchPlaceholder = "Cari..." }) => {
+const Header = ({ title, subtitle, onSearch, searchPlaceholder = "Cari...", showHomeButton = false }) => {
   const { isDark, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchValue, setSearchValue] = useState('');
+  
+  // Determine if we should show home/dashboard button
+  const shouldShowButton = showHomeButton || (location.pathname !== '/' && location.pathname !== '/admin');
+  const isAdminPage = location.pathname.startsWith('/admin');
+  const homePath = isAdminPage ? '/admin' : '/';
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -31,6 +39,27 @@ const Header = ({ title, subtitle, onSearch, searchPlaceholder = "Cari..." }) =>
         </div>
 
         <div className="flex items-center flex-shrink-0 mt-4 space-x-2 md:space-x-4 lg:mt-0">
+          {/* Home/Dashboard Button */}
+          {shouldShowButton && (
+            <button
+              onClick={() => navigate(homePath)}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
+              title={isAdminPage ? "Ke Dashboard" : "Ke Home"}
+            >
+              {isAdminPage ? (
+                <>
+                  <AiOutlineDashboard size={18} />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </>
+              ) : (
+                <>
+                  <AiOutlineHome size={18} />
+                  <span className="hidden sm:inline">Home</span>
+                </>
+              )}
+            </button>
+          )}
+          
           {/* Search Bar */}
           {onSearch && (
             <form onSubmit={handleSearchSubmit} className="relative hidden sm:block">

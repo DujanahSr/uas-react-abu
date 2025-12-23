@@ -100,30 +100,30 @@
 //       <main className="p-6">
 //         {/* Stats Cards */}
 //         <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 lg:grid-cols-5">
-//           <div className="p-6 bg-white border-l-4 border-blue-500 shadow-sm dark:bg-gray-800 rounded-xl">
+//           <div className="p-6 bg-white border-l-4 border-blue-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
 //             <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
 //             <div className="text-sm text-gray-600">Total Pemesanan</div>
 //           </div>
-//           <div className="p-6 bg-white border-l-4 border-green-500 shadow-sm dark:bg-gray-800 rounded-xl">
+//           <div className="p-6 bg-white border-l-4 border-green-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
 //             <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
 //             <div className="text-sm text-gray-600">Confirmed</div>
 //           </div>
-//           <div className="p-6 bg-white border-l-4 border-yellow-500 shadow-sm dark:bg-gray-800 rounded-xl">
+//           <div className="p-6 bg-white border-l-4 border-yellow-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
 //             <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
 //             <div className="text-sm text-gray-600">Pending</div>
 //           </div>
-//           <div className="p-6 bg-white border-l-4 border-purple-500 shadow-sm dark:bg-gray-800 rounded-xl">
+//           <div className="p-6 bg-white border-l-4 border-purple-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
 //             <div className="text-2xl font-bold text-purple-600">{stats.paid}</div>
 //             <div className="text-sm text-gray-600">Paid</div>
 //           </div>
-//           <div className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm dark:bg-gray-800 rounded-xl">
+//           <div className="p-6 bg-white border-l-4 border-indigo-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
 //             <div className="text-lg font-bold text-indigo-600">{formatPrice(stats.revenue)}</div>
 //             <div className="text-sm text-gray-600">Total Revenue</div>
 //           </div>
 //         </div>
 
 //         {/* Filters and Controls */}
-//         <div className="p-6 mb-6 bg-white shadow-sm dark:bg-gray-800 rounded-xl">
+//         <div className="p-6 mb-6 bg-white shadow-sm dark:bg-slate-800/90 rounded-xl">
 //           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 //             {/* Search */}
 //             <div>
@@ -187,11 +187,11 @@
 //         </div>
 
 //         {/* Bookings Table */}
-//         <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 rounded-xl">
+//         <div className="overflow-hidden bg-white shadow-sm dark:bg-slate-800/90 rounded-xl">
 //           {filteredBookings.length > 0 ? (
 //             <div className="overflow-x-auto">
 //               <table className="w-full">
-//                 <thead className="bg-gray-50 dark:bg-gray-800">
+//                 <thead className="bg-gray-50 dark:bg-slate-800/90">
 //                   <tr>
 //                     <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
 //                       Booking Info
@@ -213,7 +213,7 @@
 //                     </th>
 //                   </tr>
 //                 </thead>
-//                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800">
+//                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800/90">
 //                   {filteredBookings.map((booking) => (
 //                     <tr key={booking.id} className="hover:bg-gray-50">
 //                       <td className="px-6 py-4 whitespace-nowrap">
@@ -684,7 +684,16 @@ const AdminBookings = () => {
   };
 
   return (
-    <div className="min-h-screen transition-colors bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-200/20 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
+
       <Header
         title="Kelola Pemesanan"
         subtitle="Kelola dan pantau semua pemesanan tiket pesawat"
@@ -692,10 +701,10 @@ const AdminBookings = () => {
         searchPlaceholder="Cari kode booking, nama, atau nomor penerbangan..."
       />
 
-      <div className="p-4 md:p-6">
+      <div className="relative z-10 p-4 md:p-6">
         {/* Search Indicator */}
         {searchTerm && (
-          <div className="mb-4 p-3 text-sm bg-gray-100 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+          <div className="mb-4 p-3 text-sm bg-gray-100/80 backdrop-blur-sm border-b border-gray-200/50 dark:bg-slate-700/50 dark:border-slate-600/50 rounded-lg animate-slideInUp">
             Menampilkan hasil untuk:{" "}
             <strong className="text-gray-900 dark:text-white">
               "{searchTerm}"
@@ -705,7 +714,10 @@ const AdminBookings = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="p-5 bg-white border-l-4 border-blue-500 shadow-sm dark:bg-gray-800 rounded-xl">
+          <div
+            className="p-4 bg-white/90 backdrop-blur-sm border-l-4 border-blue-500 shadow-lg dark:bg-slate-800/90 rounded-xl card-3d animate-slideInUp sm:p-5"
+            style={{ animationDelay: "0.1s" }}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xl font-bold text-gray-800 dark:text-white">
@@ -718,7 +730,10 @@ const AdminBookings = () => {
               <AiOutlineFileText size={24} className="text-blue-500" />
             </div>
           </div>
-          <div className="p-5 bg-white border-l-4 border-green-500 shadow-sm dark:bg-gray-800 rounded-xl">
+          <div
+            className="p-4 bg-white/90 backdrop-blur-sm border-l-4 border-green-500 shadow-lg dark:bg-slate-800/90 rounded-xl card-3d animate-slideInUp sm:p-5"
+            style={{ animationDelay: "0.2s" }}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xl font-bold text-gray-800 dark:text-white">
@@ -731,7 +746,10 @@ const AdminBookings = () => {
               <AiOutlineCheckCircle size={24} className="text-green-500" />
             </div>
           </div>
-          <div className="p-5 bg-white border-l-4 border-yellow-500 shadow-sm dark:bg-gray-800 rounded-xl">
+          <div
+            className="p-4 bg-white/90 backdrop-blur-sm border-l-4 border-yellow-500 shadow-lg dark:bg-slate-800/90 rounded-xl card-3d animate-slideInUp sm:p-5"
+            style={{ animationDelay: "0.3s" }}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xl font-bold text-gray-800 dark:text-white">
@@ -744,7 +762,7 @@ const AdminBookings = () => {
               <AiOutlineClockCircle size={24} className="text-yellow-500" />
             </div>
           </div>
-          <div className="p-5 bg-white border-l-4 border-purple-500 shadow-sm dark:bg-gray-800 rounded-xl">
+          <div className="p-5 bg-white border-l-4 border-purple-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xl font-bold text-gray-800 dark:text-white">
@@ -757,7 +775,7 @@ const AdminBookings = () => {
               <AiOutlineCreditCard size={24} className="text-purple-500" />
             </div>
           </div>
-          <div className="p-5 bg-white border-l-4 border-indigo-500 shadow-sm dark:bg-gray-800 rounded-xl">
+          <div className="p-5 bg-white border-l-4 border-indigo-500 shadow-sm dark:bg-slate-800/90 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-base font-bold text-gray-800 dark:text-white">
@@ -773,7 +791,7 @@ const AdminBookings = () => {
         </div>
 
         {/* Filters */}
-        <div className="p-6 mb-6 bg-white shadow-sm dark:bg-gray-800 rounded-xl">
+        <div className="p-6 mb-6 bg-white shadow-sm dark:bg-slate-800/90 rounded-xl">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -785,7 +803,7 @@ const AdminBookings = () => {
                   placeholder="Kode booking, nama, nomor flight..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                 />
                 <AiOutlineSearch
                   className="absolute text-gray-400 left-3 top-3 dark:text-gray-500"
@@ -801,7 +819,7 @@ const AdminBookings = () => {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
+                  className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white appearance-none"
                 >
                   <option value="all">Semua Status</option>
                   <option value="confirmed">Confirmed</option>
@@ -824,7 +842,7 @@ const AdminBookings = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
+                  className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white appearance-none"
                 >
                   <option value="bookingDate">Tanggal Booking (Terbaru)</option>
                   <option value="departureDate">Tanggal Berangkat</option>
@@ -854,7 +872,7 @@ const AdminBookings = () => {
             <div className="flex gap-3">
               <button
                 onClick={clearFilters}
-                className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                className="px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
               >
                 <AiOutlineReload size={16} />
                 Reset Filter
@@ -881,11 +899,11 @@ const AdminBookings = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 rounded-xl">
+        <div className="overflow-hidden bg-white shadow-sm dark:bg-slate-800/90 rounded-xl">
           {filteredBookings.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-max">
-                <thead className="border-b border-gray-200 bg-gray-50 dark:bg-gray-900/50 dark:border-gray-700">
+                <thead className="border-b border-gray-200 bg-gray-50 dark:bg-gray-900/50 dark:border-slate-700/50">
                   <tr>
                     <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-300">
                       <div className="flex items-center gap-2">
@@ -969,7 +987,7 @@ const AdminBookings = () => {
                           <AiOutlineCalendar size={12} />{" "}
                           {booking.departureDate} {booking.departureTime}
                         </div>
-                        <div className="inline-block px-2 py-1 mt-1 text-xs text-gray-700 bg-gray-100 rounded dark:bg-gray-700 dark:text-gray-300">
+                        <div className="inline-block px-2 py-1 mt-1 text-xs text-gray-700 bg-gray-100 rounded dark:bg-slate-700 dark:text-gray-300">
                           {booking.class}
                         </div>
                       </td>
@@ -1015,7 +1033,7 @@ const AdminBookings = () => {
                               onChange={(e) =>
                                 handleStatusChange(booking.id, e.target.value)
                               }
-                              className="flex-1 px-3 py-2 text-xs bg-white border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
+                              className="flex-1 px-3 py-2 text-xs bg-white border border-gray-300 rounded dark:border-slate-600 dark:bg-slate-700 focus:ring-2 focus:ring-blue-500"
                             >
                               <option>Confirmed</option>
                               <option>Pending</option>
@@ -1082,18 +1100,18 @@ const AdminBookings = () => {
 
         {/* Pagination */}
         {filteredBookings.length > 0 && (
-          <div className="flex items-center justify-between p-4 mt-6 bg-white shadow-sm dark:bg-gray-800 rounded-xl">
+          <div className="flex items-center justify-between p-4 mt-6 bg-white shadow-sm dark:bg-slate-800/90 rounded-xl">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Halaman 1 dari 1
             </div>
             <div className="flex gap-2">
-              <button className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg dark:text-gray-400 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <button className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg dark:text-gray-400 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-700">
                 Sebelumnya
               </button>
               <button className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                 1
               </button>
-              <button className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg dark:text-gray-400 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <button className="flex items-center gap-1 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg dark:text-gray-400 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-700">
                 Selanjutnya
               </button>
             </div>

@@ -374,7 +374,7 @@
 // };
 
 // export default Sidebar;
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   AiOutlineDashboard,
@@ -393,6 +393,7 @@ import {
 import { FaPlaneDeparture } from "react-icons/fa";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { useData } from "../context/DataContext";
 
 const Sidebar = ({ role = "admin", onLogout }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -401,6 +402,7 @@ const Sidebar = ({ role = "admin", onLogout }) => {
   const location = useLocation();
   const { isDark } = useTheme();
   const { admin, user } = useAuth();
+  const { bookings, flights } = useData();
 
   const menuItems =
     role === "user"
@@ -479,6 +481,27 @@ const Sidebar = ({ role = "admin", onLogout }) => {
   };
 
   const adminData = role === "admin" ? admin : user;
+
+  // Calculate real-time statistics for today
+  const todayStats = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    
+    // Count bookings today
+    const bookingsToday = bookings.filter((booking) => {
+      const bookingDate = booking.bookingDate || booking.createdAt;
+      return bookingDate && bookingDate.split("T")[0] === today;
+    }).length;
+
+    // Count active flights today
+    const flightsToday = flights.filter((flight) => {
+      return flight.departureDate === today && flight.status === "Tersedia";
+    }).length;
+
+    return {
+      bookings: bookingsToday,
+      flights: flightsToday,
+    };
+  }, [bookings, flights]);
 
   return (
     <>
@@ -645,10 +668,12 @@ const Sidebar = ({ role = "admin", onLogout }) => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Pemesanan
+                    {role === "admin" ? "Pemesanan" : "Booking Saya"}
                   </span>
                   <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                    24
+                    {role === "admin" 
+                      ? todayStats.bookings 
+                      : bookings.filter(b => b.userId === user?.email).length}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -656,7 +681,7 @@ const Sidebar = ({ role = "admin", onLogout }) => {
                     Penerbangan
                   </span>
                   <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                    12
+                    {todayStats.flights}
                   </span>
                 </div>
               </div>

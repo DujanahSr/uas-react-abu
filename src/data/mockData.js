@@ -1091,11 +1091,14 @@ export const searchFlights = (filters, flightsArray = null) => {
 
 // Fungsi helper untuk format harga
 export const formatPrice = (price) => {
-  return new Intl.NumberFormat('id-ID', {
+  const formatted = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(price);
+  // Replace "Rp" with smaller "Rp." and remove spaces
+  return formatted.replace('Rp', 'Rp.').replace(/\s/g, '');
 };
 
 // Fungsi helper untuk format tanggal

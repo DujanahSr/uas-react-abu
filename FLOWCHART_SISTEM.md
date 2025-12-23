@@ -807,6 +807,7 @@
 ## 🎨 SIMBOL FLOWCHART YANG DIGUNAKAN
 
 ### 1. Terminal (Start/End)
+
 ```
 ┌─────────┐
 │  START  │
@@ -818,6 +819,7 @@
 ```
 
 ### 2. Process
+
 ```
 ┌─────────────────┐
 │   [PROCESS]     │
@@ -826,6 +828,7 @@
 ```
 
 ### 3. Decision
+
 ```
       ┌─────────┐
       │ DECISION│
@@ -840,6 +843,7 @@
 ```
 
 ### 4. Input/Output
+
 ```
 ┌───────────────┐
 │   [INPUT]     │
@@ -848,6 +852,7 @@
 ```
 
 ### 5. Panah (Arrow)
+
 ```
     │
     ▼
@@ -860,6 +865,7 @@
 ## 📝 CATATAN PENTING
 
 1. **Simbol yang Digunakan:**
+
    - `[START/END]` = Terminal (Oval)
    - `[PROCESS]` = Process (Rectangle)
    - `[DECISION]` = Decision (Diamond)
@@ -867,15 +873,19 @@
    - `→` = Panah alur
 
 2. **Alur Utama:**
+
    - Start → Login/Register → Role Check → User Flow / Admin Flow → End
 
 3. **User Flow:**
+
    - Home → Search → Flight Detail → Booking (4 Steps) → Success
 
 4. **Admin Flow:**
+
    - Dashboard → Flights/Bookings/Analytics/Settings → Manage Data
 
 5. **Data Flow:**
+
    - State → localStorage → Storage Event → Other Tabs Update
 
 6. **Error Handling:**
@@ -886,12 +896,14 @@
 ## 🔗 INTEGRASI DENGAN FLOWCHART TOOLS
 
 File ini dapat digunakan dengan tools seperti:
+
 - **Draw.io / diagrams.net**
 - **Lucidchart**
 - **Visio**
 - **Mermaid** (untuk render langsung di markdown)
 
 Untuk menggunakan di Mermaid, konversi simbol menjadi syntax Mermaid:
+
 - `[START]` → `[Start]`
 - `[PROCESS]` → `[Process]`
 - `[DECISION]` → `{Decision}`
@@ -900,4 +912,3 @@ Untuk menggunakan di Mermaid, konversi simbol menjadi syntax Mermaid:
 ---
 
 **File ini siap digunakan untuk membuat flowchart visual di tools flowchart standar!**
-

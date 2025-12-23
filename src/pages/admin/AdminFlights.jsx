@@ -14,6 +14,12 @@ import {
   getStatusBadge,
 } from "../../data/mockData";
 import {
+  validateFlightNumber,
+  validateTime,
+  validatePrice,
+  validateSeats,
+} from "../../utils/validation";
+import {
   AiOutlinePlus,
   AiOutlineEdit,
   AiOutlineDelete,
@@ -67,6 +73,7 @@ const AdminFlights = () => {
     isOpen: false,
     flightId: null,
   });
+  const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     flightNumber: "",
     airline: "Garuda Indonesia",
@@ -342,69 +349,114 @@ const AdminFlights = () => {
   };
 
   const handleSaveFlight = () => {
-    // Validation: Form harus lengkap
-    if (
-      !formData.flightNumber ||
-      !formData.from ||
-      !formData.to ||
-      !formData.departureDate ||
-      !formData.departureTime ||
-      !formData.arrivalTime
-    ) {
-      setAlert({
-        isOpen: true,
-        type: "warning",
-        title: "Form Belum Lengkap",
-        message: "Mohon lengkapi semua field yang wajib!",
-      });
-      return;
+    // Validasi semua field
+    const errors = {};
+    let hasErrors = false;
+
+    // Validasi nomor penerbangan
+    if (!formData.flightNumber) {
+      errors.flightNumber = "Nomor penerbangan wajib diisi";
+      hasErrors = true;
+    } else {
+      const flightNumError = validateFlightNumber(formData.flightNumber);
+      if (flightNumError) {
+        errors.flightNumber = flightNumError;
+        hasErrors = true;
+      }
+    }
+
+    // Validasi waktu
+    if (!formData.departureTime) {
+      errors.departureTime = "Waktu keberangkatan wajib diisi";
+      hasErrors = true;
+    } else {
+      const timeError = validateTime(formData.departureTime);
+      if (timeError) {
+        errors.departureTime = timeError;
+        hasErrors = true;
+      }
+    }
+
+    if (!formData.arrivalTime) {
+      errors.arrivalTime = "Waktu kedatangan wajib diisi";
+      hasErrors = true;
+    } else {
+      const timeError = validateTime(formData.arrivalTime);
+      if (timeError) {
+        errors.arrivalTime = timeError;
+        hasErrors = true;
+      }
+    }
+
+    // Validasi rute
+    if (!formData.from || !formData.to) {
+      if (!formData.from) errors.from = "Kota keberangkatan wajib diisi";
+      if (!formData.to) errors.to = "Kota tujuan wajib diisi";
+      hasErrors = true;
     }
 
     // Validation: Kota berangkat tidak boleh sama dengan kota tujuan
     if (formData.fromCode === formData.toCode) {
-      setAlert({
-        isOpen: true,
-        type: "error",
-        title: "Kota Tidak Valid",
-        message: "Kota berangkat tidak boleh sama dengan kota tujuan!",
-      });
-      return;
+      errors.to = "Kota berangkat tidak boleh sama dengan kota tujuan!";
+      hasErrors = true;
     }
 
     // Validation: Tanggal berangkat minimal hari ini
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const departureDate = new Date(formData.departureDate);
-    departureDate.setHours(0, 0, 0, 0);
+    if (!formData.departureDate) {
+      errors.departureDate = "Tanggal keberangkatan wajib diisi";
+      hasErrors = true;
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const departureDate = new Date(formData.departureDate);
+      departureDate.setHours(0, 0, 0, 0);
 
-    if (departureDate < today) {
-      setAlert({
-        isOpen: true,
-        type: "error",
-        title: "Tanggal Tidak Valid",
-        message: "Tanggal berangkat tidak boleh kurang dari hari ini!",
-      });
-      return;
+      if (departureDate < today) {
+        errors.departureDate =
+          "Tanggal berangkat tidak boleh kurang dari hari ini!";
+        hasErrors = true;
+      }
     }
 
     // Validation: Semua harga class harus diisi
-    if (
-      !formData.prices?.economy ||
-      formData.prices.economy <= 0 ||
-      !formData.prices?.business ||
-      formData.prices.business <= 0 ||
-      !formData.prices?.first ||
-      formData.prices.first <= 0
-    ) {
+    const priceErrors = {};
+    if (!formData.prices?.economy || formData.prices.economy <= 0) {
+      priceErrors.economy = validatePrice(formData.prices?.economy || 0);
+      if (priceErrors.economy) hasErrors = true;
+    }
+    if (!formData.prices?.business || formData.prices.business <= 0) {
+      priceErrors.business = validatePrice(formData.prices?.business || 0);
+      if (priceErrors.business) hasErrors = true;
+    }
+    if (!formData.prices?.first || formData.prices.first <= 0) {
+      priceErrors.first = validatePrice(formData.prices?.first || 0);
+      if (priceErrors.first) hasErrors = true;
+    }
+
+    // Validasi kursi
+    if (!formData.availableSeats && formData.availableSeats !== 0) {
+      errors.availableSeats = "Jumlah kursi tersedia wajib diisi";
+      hasErrors = true;
+    } else {
+      const seatsError = validateSeats(formData.availableSeats);
+      if (seatsError) {
+        errors.availableSeats = seatsError;
+        hasErrors = true;
+      }
+    }
+
+    if (hasErrors) {
+      setFormErrors({ ...errors, ...priceErrors });
       setAlert({
         isOpen: true,
         type: "warning",
-        title: "Harga Belum Lengkap",
-        message:
-          "Mohon isi harga untuk semua kelas (Ekonomi, Bisnis, First Class)!",
+        title: "Form Belum Valid",
+        message: "Mohon perbaiki error pada form!",
       });
       return;
     }
+
+    setFormErrors({});
 
     const flightData = {
       ...formData,
@@ -471,7 +523,16 @@ const AdminFlights = () => {
   };
 
   return (
-    <div className="min-h-screen transition-colors bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-200/20 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
+
       <Header
         title="Kelola Penerbangan"
         subtitle="Kelola dan pantau semua penerbangan yang tersedia"
@@ -479,24 +540,28 @@ const AdminFlights = () => {
         searchPlaceholder="Cari nomor penerbangan, maskapai, atau rute..."
       />
 
-      <div className="p-4 md:p-6">
+      <div className="relative z-10 p-4 md:p-6">
         {/* Actions */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between sm:mb-6 animate-slideInUp">
+          <h2 className="text-xl font-bold text-gray-800 sm:text-2xl dark:text-white">
             Daftar Penerbangan ({filteredFlights.length})
           </h2>
           <button
             onClick={handleAddFlight}
-            className="flex items-center gap-2 px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-white transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl sm:px-6 sm:py-3"
           >
             <AiOutlinePlus size={18} />
-            Tambah Penerbangan
+            <span className="hidden sm:inline">Tambah Penerbangan</span>
+            <span className="sm:hidden">Tambah</span>
           </button>
         </div>
 
         {/* Search Form - Admin Specific */}
-        <div className="mb-6">
-          <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div
+          className="mb-4 sm:mb-6 animate-slideInUp"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <div className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-lg dark:bg-slate-800/90 dark:border-slate-700/50 card-3d sm:p-6">
             <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <AiOutlineSearch size={20} />
               Cari Penerbangan (Admin)
@@ -505,7 +570,7 @@ const AdminFlights = () => {
               Pencarian dapat dilakukan berdasarkan: Nomor Penerbangan,
               Maskapai, Rute, atau Tanggal Keberangkatan
             </p>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Nomor Penerbangan
@@ -524,7 +589,7 @@ const AdminFlights = () => {
                       flightNumber: e.target.value,
                     });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all sm:px-4"
                 />
               </div>
               <div>
@@ -543,7 +608,7 @@ const AdminFlights = () => {
                       airline: e.target.value,
                     });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all sm:px-4"
                 >
                   <option value="">Semua Maskapai</option>
                   {airlines.map((airline) => (
@@ -569,7 +634,7 @@ const AdminFlights = () => {
                       from: e.target.value,
                     });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all sm:px-4"
                 >
                   <option value="">Semua Kota</option>
                   {airports.map((airport) => (
@@ -592,7 +657,7 @@ const AdminFlights = () => {
                       to: e.target.value,
                     });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all sm:px-4"
                 >
                   <option value="">Semua Kota</option>
                   {airports.map((airport) => (
@@ -619,7 +684,7 @@ const AdminFlights = () => {
                       departureDate: e.target.value,
                     });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all sm:px-4"
                 />
               </div>
             </div>
@@ -636,7 +701,7 @@ const AdminFlights = () => {
                   setFilteredFlights(flights);
                   setFilterStatus("all");
                 }}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-200 dark:hover:bg-slate-600"
               >
                 <AiOutlineReload size={16} />
                 Reset
@@ -657,7 +722,10 @@ const AdminFlights = () => {
         </div>
 
         {/* Controls */}
-        <div className="p-6 mb-6 transition-colors bg-white border border-gray-200 shadow-sm dark:bg-gray-800 rounded-xl dark:border-gray-700">
+        <div
+          className="p-4 mb-4 sm:mb-6 transition-all duration-300 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg dark:bg-slate-800/90 rounded-xl dark:border-slate-700/50 card-3d animate-slideInUp sm:p-6"
+          style={{ animationDelay: "0.3s" }}
+        >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
               <span className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
@@ -677,7 +745,7 @@ const AdminFlights = () => {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                       filterStatus === status.key
                         ? "bg-blue-600 text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600"
                     }`}
                   >
                     {status.label}
@@ -694,7 +762,7 @@ const AdminFlights = () => {
               <select
                 value={sortBy}
                 onChange={(e) => handleSort(e.target.value)}
-                className="px-4 py-2 text-gray-800 transition-colors bg-white border border-gray-300 rounded-lg dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="px-4 py-2 text-gray-800 transition-colors bg-white border border-gray-300 rounded-lg dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
               >
                 <option value="price-asc">Harga Terendah</option>
                 <option value="price-desc">Harga Tertinggi</option>
@@ -704,7 +772,7 @@ const AdminFlights = () => {
 
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 transition-colors border border-gray-300 rounded-lg dark:text-gray-300 hover:text-gray-800 dark:hover:text-white dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 transition-colors border border-gray-300 rounded-lg dark:text-gray-300 hover:text-gray-800 dark:hover:text-white dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <AiOutlineReload size={16} />
                 Reset
@@ -715,7 +783,7 @@ const AdminFlights = () => {
 
         {/* Search Indicator */}
         {headerSearch && (
-          <div className="mb-4 p-3 text-sm bg-gray-100 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+          <div className="mb-4 p-3 text-sm bg-gray-100/80 backdrop-blur-sm border-b border-gray-200/50 dark:bg-slate-700/50 dark:border-slate-600/50 rounded-lg animate-slideInUp">
             Menampilkan hasil untuk:{" "}
             <strong className="text-gray-900 dark:text-white">
               "{headerSearch}"
@@ -733,11 +801,12 @@ const AdminFlights = () => {
           </div>
         ) : filteredFlights.length > 0 ? (
           <>
-            <div className="grid gap-6">
-              {paginatedFlights.map((flight) => (
+            <div className="grid gap-4 sm:gap-6">
+              {paginatedFlights.map((flight, index) => (
                 <div
                   key={flight.id}
-                  className="p-6 transition-shadow duration-300 bg-white border border-gray-100 shadow-sm dark:bg-gray-800 rounded-xl dark:border-gray-700 hover:shadow-md"
+                  className="p-4 transition-all duration-300 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg dark:bg-slate-800/90 rounded-xl dark:border-slate-700/50 hover:shadow-xl card-3d animate-slideInUp sm:p-6"
+                  style={{ animationDelay: `${0.4 + index * 0.1}s` }}
                 >
                   {/* Header with Airline and Actions */}
                   <div className="flex items-start justify-between mb-4">
@@ -840,7 +909,7 @@ const AdminFlights = () => {
                   </div>
 
                   {/* Footer with Price and Seats */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700/50">
                     <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
                       <div className="flex items-center">
                         <AiOutlineUser size={16} className="mr-1" />
@@ -863,7 +932,7 @@ const AdminFlights = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-8 p-4 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+              <div className="flex items-center justify-between mt-8 p-4 bg-white border border-gray-200 rounded-xl dark:bg-slate-800/90 dark:border-slate-700/50">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   Menampilkan{" "}
                   <strong className="text-gray-900 dark:text-white">
@@ -885,8 +954,8 @@ const AdminFlights = () => {
                     disabled={currentPage === 1}
                     className={`flex items-center gap-1 px-4 py-2 text-sm rounded-lg transition-colors ${
                       currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600"
-                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-700 dark:text-gray-600"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 dark:hover:bg-slate-600"
                     }`}
                   >
                     <AiOutlineLeft size={16} />
@@ -909,7 +978,7 @@ const AdminFlights = () => {
                               className={`px-3 py-2 text-sm rounded-lg transition-colors ${
                                 currentPage === page
                                   ? "bg-blue-600 text-white"
-                                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 dark:hover:bg-slate-600"
                               }`}
                             >
                               {page}
@@ -938,8 +1007,8 @@ const AdminFlights = () => {
                     disabled={currentPage === totalPages}
                     className={`flex items-center gap-1 px-4 py-2 text-sm rounded-lg transition-colors ${
                       currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600"
-                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-700 dark:text-gray-600"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 dark:hover:bg-slate-600"
                     }`}
                   >
                     Selanjutnya
@@ -973,7 +1042,7 @@ const AdminFlights = () => {
         {/* Add/Edit Flight Modal */}
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-            <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl dark:bg-slate-800/90 border border-gray-200 dark:border-slate-700/50">
               {/* Modal Header */}
               <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-2xl">
                 <div className="flex items-center gap-3">
@@ -1005,7 +1074,7 @@ const AdminFlights = () => {
               {/* Form Sections */}
               <div className="space-y-8">
                 {/* Basic Information */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+                <div className="p-6 bg-gray-50 dark:bg-slate-700/30 rounded-xl border border-gray-200 dark:border-slate-600">
                   <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <AiOutlineInfoCircle
                       size={20}
@@ -1029,7 +1098,7 @@ const AdminFlights = () => {
                           })
                         }
                         placeholder="GA-123"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
                       />
                     </div>
@@ -1051,7 +1120,7 @@ const AdminFlights = () => {
                             airline: airline?.name || formData.airline,
                           });
                         }}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         {airlines.map((airline) => (
                           <option key={airline.code} value={airline.code}>
@@ -1064,7 +1133,7 @@ const AdminFlights = () => {
                 </div>
 
                 {/* Route Information */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+                <div className="p-6 bg-gray-50 dark:bg-slate-700/30 rounded-xl border border-gray-200 dark:border-slate-600">
                   <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <FaMapMarkerAlt
                       size={20}
@@ -1092,7 +1161,7 @@ const AdminFlights = () => {
                               : formData.from,
                           });
                         }}
-                        className={`w-full px-4 py-3 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        className={`w-full px-4 py-3 border rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                           formData.fromCode === formData.toCode &&
                           formData.fromCode
                             ? "border-red-500 dark:border-red-500"
@@ -1135,7 +1204,7 @@ const AdminFlights = () => {
                               : formData.to,
                           });
                         }}
-                        className={`w-full px-4 py-3 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        className={`w-full px-4 py-3 border rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                           formData.fromCode === formData.toCode &&
                           formData.toCode
                             ? "border-red-500 dark:border-red-500"
@@ -1164,7 +1233,7 @@ const AdminFlights = () => {
                 </div>
 
                 {/* Schedule Information */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+                <div className="p-6 bg-gray-50 dark:bg-slate-700/30 rounded-xl border border-gray-200 dark:border-slate-600">
                   <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <AiOutlineCalendar
                       size={20}
@@ -1181,19 +1250,30 @@ const AdminFlights = () => {
                       <input
                         type="date"
                         value={formData.departureDate}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({
                             ...formData,
                             departureDate: e.target.value,
-                          })
-                        }
+                          });
+                          setFormErrors({ ...formErrors, departureDate: "" });
+                        }}
                         min={new Date().toISOString().split("T")[0]}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          formErrors.departureDate
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 dark:border-slate-600"
+                        }`}
                         required
                       />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Minimal tanggal hari ini
-                      </p>
+                      {formErrors.departureDate ? (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {formErrors.departureDate}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Minimal tanggal hari ini
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1204,15 +1284,28 @@ const AdminFlights = () => {
                       <input
                         type="time"
                         value={formData.departureTime}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({
                             ...formData,
                             departureTime: e.target.value,
-                          })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          });
+                          setFormErrors({
+                            ...formErrors,
+                            departureTime: validateTime(e.target.value),
+                          });
+                        }}
+                        className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          formErrors.departureTime
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 dark:border-slate-600"
+                        }`}
                         required
                       />
+                      {formErrors.departureTime && (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {formErrors.departureTime}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1223,15 +1316,28 @@ const AdminFlights = () => {
                       <input
                         type="time"
                         value={formData.arrivalTime}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({
                             ...formData,
                             arrivalTime: e.target.value,
-                          })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          });
+                          setFormErrors({
+                            ...formErrors,
+                            arrivalTime: validateTime(e.target.value),
+                          });
+                        }}
+                        className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          formErrors.arrivalTime
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 dark:border-slate-600"
+                        }`}
                         required
                       />
+                      {formErrors.arrivalTime && (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {formErrors.arrivalTime}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1246,14 +1352,14 @@ const AdminFlights = () => {
                           setFormData({ ...formData, duration: e.target.value })
                         }
                         placeholder="3j 30m"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Price & Availability - All Classes */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+                <div className="p-6 bg-gray-50 dark:bg-slate-700/30 rounded-xl border border-gray-200 dark:border-slate-600">
                   <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <AiOutlineDollarCircle
                       size={20}
@@ -1267,7 +1373,7 @@ const AdminFlights = () => {
                   </p>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     {/* Harga Ekonomi */}
-                    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-200 dark:border-slate-700/50">
                       <label className="block mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                         <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded">
                           Ekonomi
@@ -1281,26 +1387,40 @@ const AdminFlights = () => {
                         <input
                           type="number"
                           value={formData.prices?.economy || 0}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
                             setFormData({
                               ...formData,
-                              price: parseInt(e.target.value) || 0, // Set default price ke economy
+                              price: value, // Set default price ke economy
                               prices: {
                                 ...formData.prices,
-                                economy: parseInt(e.target.value) || 0,
+                                economy: value,
                               },
-                            })
-                          }
+                            });
+                            setFormErrors({
+                              ...formErrors,
+                              economy: validatePrice(value),
+                            });
+                          }}
                           placeholder="1200000"
                           min="0"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                            formErrors.economy
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-gray-300 dark:border-slate-600"
+                          }`}
                           required
                         />
                       </div>
+                      {formErrors.economy && (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {formErrors.economy}
+                        </p>
+                      )}
                     </div>
 
                     {/* Harga Bisnis */}
-                    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-200 dark:border-slate-700/50">
                       <label className="block mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                         <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded">
                           Bisnis
@@ -1314,25 +1434,39 @@ const AdminFlights = () => {
                         <input
                           type="number"
                           value={formData.prices?.business || 0}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
                             setFormData({
                               ...formData,
                               prices: {
                                 ...formData.prices,
-                                business: parseInt(e.target.value) || 0,
+                                business: value,
                               },
-                            })
-                          }
+                            });
+                            setFormErrors({
+                              ...formErrors,
+                              business: validatePrice(value),
+                            });
+                          }}
                           placeholder="2500000"
                           min="0"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            formErrors.business
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-gray-300 dark:border-slate-600"
+                          }`}
                           required
                         />
                       </div>
+                      {formErrors.business && (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {formErrors.business}
+                        </p>
+                      )}
                     </div>
 
                     {/* Harga First Class */}
-                    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-200 dark:border-slate-700/50">
                       <label className="block mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                         <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded">
                           First Class
@@ -1346,27 +1480,41 @@ const AdminFlights = () => {
                         <input
                           type="number"
                           value={formData.prices?.first || 0}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
                             setFormData({
                               ...formData,
                               prices: {
                                 ...formData.prices,
-                                first: parseInt(e.target.value) || 0,
+                                first: value,
                               },
-                            })
-                          }
+                            });
+                            setFormErrors({
+                              ...formErrors,
+                              first: validatePrice(value),
+                            });
+                          }}
                           placeholder="5000000"
                           min="0"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                            formErrors.first
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-gray-300 dark:border-slate-600"
+                          }`}
                           required
                         />
                       </div>
+                      {formErrors.first && (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {formErrors.first}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* Availability */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+                <div className="p-6 bg-gray-50 dark:bg-slate-700/30 rounded-xl border border-gray-200 dark:border-slate-600">
                   <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <HiOutlineUserGroup
                       size={20}
@@ -1383,20 +1531,35 @@ const AdminFlights = () => {
                       <input
                         type="number"
                         value={formData.availableSeats}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
                           setFormData({
                             ...formData,
-                            availableSeats: parseInt(e.target.value) || 0,
-                          })
-                        }
+                            availableSeats: value,
+                          });
+                          setFormErrors({
+                            ...formErrors,
+                            availableSeats: validateSeats(value),
+                          });
+                        }}
                         placeholder="180"
                         min="0"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className={`w-full px-4 py-3 border rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          formErrors.availableSeats
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 dark:border-slate-600"
+                        }`}
                         required
                       />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Total kursi tersedia untuk semua kelas
-                      </p>
+                      {formErrors.availableSeats ? (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {formErrors.availableSeats}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Total kursi tersedia untuk semua kelas (1-500)
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1409,7 +1572,7 @@ const AdminFlights = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, status: e.target.value })
                         }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="Tersedia">Tersedia</option>
                         <option value="Hampir Penuh">Hampir Penuh</option>
@@ -1421,10 +1584,10 @@ const AdminFlights = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="sticky bottom-0 flex items-center justify-end gap-4 p-6 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl">
+              <div className="sticky bottom-0 flex items-center justify-end gap-4 p-6 bg-white dark:bg-slate-800/90 border-t border-gray-200 dark:border-slate-700/50 rounded-b-2xl">
                 <button
                   onClick={() => setShowForm(false)}
-                  className="flex items-center gap-2 px-6 py-3 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+                  className="flex items-center gap-2 px-6 py-3 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors font-medium"
                 >
                   <AiOutlineClose size={18} />
                   Batal
