@@ -3,7 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import LoadingScreen from "../components/LoadingScreen";
 import { FaPlane, FaUser, FaShieldAlt } from "react-icons/fa";
-import { AiOutlineMail, AiOutlineLock, AiOutlineUser } from "react-icons/ai";
+import {
+  AiOutlineMail,
+  AiOutlineLock,
+  AiOutlineUser,
+  AiOutlineEye,
+  AiOutlineEyeInvisible,
+} from "react-icons/ai";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +23,7 @@ const Login = () => {
   const [loadingMessage, setLoadingMessage] = useState("Memuat...");
   const { loginUser, loginAdmin } = useAuth();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -133,7 +140,7 @@ const Login = () => {
               <AiOutlineMail size={16} className="text-blue-600 dark:text-blue-400" />
               Email
             </label>
-            <div className="relative">
+            <div className="relative group">
               <input
                 type="email"
                 name="email"
@@ -144,10 +151,13 @@ const Login = () => {
                     ? "admin@example.com"
                     : "email@contoh.com"
                 }
-                className="w-full px-4 py-3 pl-10 bg-white border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full px-4 py-3 pl-10 bg-white border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-transform duration-200 group-hover:scale-[0.99] group-focus-within:scale-[0.99]"
                 required
               />
-              <AiOutlineMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <AiOutlineMail
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-transform duration-300 group-hover:rotate-6 group-focus-within:rotate-12"
+                size={18}
+              />
             </div>
           </div>
 
@@ -156,19 +166,34 @@ const Login = () => {
               <AiOutlineLock size={16} className="text-blue-600 dark:text-blue-400" />
               Password
             </label>
-            <div className="relative">
+            <div className="relative group">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder={
                   formData.role === "admin" ? "admin123" : "Masukkan password"
                 }
-                className="w-full px-4 py-3 pl-10 bg-white border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full px-4 py-3 pl-10 pr-10 bg-white border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-transform duration-200 group-hover:scale-[0.99] group-focus-within:scale-[0.99]"
                 required
               />
-              <AiOutlineLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <AiOutlineLock
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-transform duration-300 group-hover:rotate-6 group-focus-within:rotate-12"
+                size={18}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-transform duration-300 hover:rotate-12"
+                aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
+              >
+                {showPassword ? (
+                  <AiOutlineEyeInvisible size={18} />
+                ) : (
+                  <AiOutlineEye size={18} />
+                )}
+              </button>
             </div>
           </div>
 

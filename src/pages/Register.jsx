@@ -171,14 +171,14 @@ const Register = () => {
               />
               Nama Lengkap
             </label>
-            <div className="relative">
+            <div className="relative group">
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Masukkan nama lengkap (min. 3 karakter)"
-                className={`w-full px-4 py-3 pl-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
+                className={`w-full px-4 py-3 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-transform duration-200 group-hover:scale-[0.99] group-focus-within:scale-[0.99] ${
                   fieldErrors.name
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
@@ -190,10 +190,6 @@ const Register = () => {
                   {fieldErrors.name}
                 </p>
               )}
-              <FaUser
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={16}
-              />
             </div>
           </div>
 
@@ -205,14 +201,14 @@ const Register = () => {
               />
               Email
             </label>
-            <div className="relative">
+            <div className="relative group">
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="email@contoh.com"
-                className={`w-full px-4 py-3 pl-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
+                className={`w-full px-4 py-3 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-transform duration-200 group-hover:scale-[0.99] group-focus-within:scale-[0.99] ${
                   fieldErrors.email
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
@@ -224,10 +220,6 @@ const Register = () => {
                   {fieldErrors.email}
                 </p>
               )}
-              <AiOutlineMail
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
             </div>
           </div>
 
@@ -240,17 +232,13 @@ const Register = () => {
               Password
             </label>
             <div className="relative group">
-              <AiOutlineLock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-transform duration-200 group-focus-within:scale-95 group-hover:scale-95"
-                size={18}
-              />
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Minimal 6 karakter"
-                className={`w-full px-4 py-3 pl-10 pr-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
+                className={`w-full px-4 py-3 pr-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-transform duration-200 group-hover:scale-[0.99] group-focus-within:scale-[0.99] ${
                   fieldErrors.password
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
@@ -261,7 +249,9 @@ const Register = () => {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
+                aria-label={
+                  showPassword ? "Sembunyikan password" : "Lihat password"
+                }
               >
                 {showPassword ? (
                   <AiOutlineEyeInvisible size={18} />
@@ -286,17 +276,13 @@ const Register = () => {
               Konfirmasi Password
             </label>
             <div className="relative group">
-              <AiOutlineLock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-transform duration-200 group-focus-within:scale-95 group-hover:scale-95"
-                size={18}
-              />
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Ulangi password"
-                className={`w-full px-4 py-3 pl-10 pr-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
+                className={`w-full px-4 py-3 pr-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-transform duration-200 group-hover:scale-[0.99] group-focus-within:scale-[0.99] ${
                   fieldErrors.confirmPassword
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
@@ -339,7 +325,7 @@ const Register = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="081234567890"
-                className={`w-full px-4 py-3 pl-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all ${
+                className={`w-full px-4 py-3 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-transform duration-200 hover:scale-[0.99] focus:scale-[0.99] ${
                   fieldErrors.phone
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
@@ -351,10 +337,6 @@ const Register = () => {
                   {fieldErrors.phone}
                 </p>
               )}
-              <FaPhone
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={14}
-              />
             </div>
           </div>
 
@@ -373,7 +355,7 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="Masukkan alamat lengkap (min. 10 karakter)"
                 rows={3}
-                className={`w-full px-4 py-3 pl-10 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 resize-none transition-all ${
+                className={`w-full px-4 py-3 bg-white border rounded-xl dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 resize-none transition-transform duration-200 hover:scale-[0.99] focus:scale-[0.99] ${
                   fieldErrors.address
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-300 dark:border-gray-600"
@@ -385,10 +367,6 @@ const Register = () => {
                   {fieldErrors.address}
                 </p>
               )}
-              <FaMapMarkerAlt
-                className="absolute left-3 top-4 text-gray-400"
-                size={14}
-              />
             </div>
           </div>
 
